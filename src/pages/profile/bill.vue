@@ -1,10 +1,8 @@
 <template>
-  <view class="bill-page">
-    <app-header title="账单" :back="true" />
-
-    <sticky-page-top :height-rpx="104">
+  <PageLayout class="bill-page" title="账单" :back="true" :fixed-header-height="104">
+    <template #fixed-header>
       <top-tabs v-model="activeTab" :items="pageData.tabs" />
-    </sticky-page-top>
+    </template>
 
     <view class="bill-page__content">
       <view class="bill-page__summary">
@@ -64,15 +62,14 @@
         </view>
       </section-card>
     </view>
-  </view>
+  </PageLayout>
 </template>
 
 <script setup lang="ts">
 import { computed, reactive, ref } from 'vue'
 import { onShow } from '@dcloudio/uni-app'
-import AppHeader from '@/components/common/AppHeader.vue'
+import PageLayout from '@/components/common/layout/PageLayout.vue'
 import SectionCard from '@/components/common/layout/SectionCard.vue'
-import StickyPageTop from '@/components/common/layout/StickyPageTop.vue'
 import TopTabs from '@/components/common/layout/TopTabs.vue'
 import { getBillPageData, type BillPageData, type BillTab } from '@/services/profile'
 import { guardRouteAccess } from '@/utils/auth'

@@ -1,8 +1,6 @@
 <template>
-  <view class="store-select-page">
-    <app-header title="选择门店" :back="true" />
-
-    <sticky-page-top :height-rpx="112">
+  <PageLayout class="store-select-page" title="选择门店" :back="true" :fixed-header-height="112">
+    <template #fixed-header>
       <view class="store-select-page__search-wrap">
         <t-search
           v-model:value="keyword"
@@ -12,7 +10,7 @@
           :clearable="true"
         />
       </view>
-    </sticky-page-top>
+    </template>
 
     <view class="store-select-page__content">
       <view
@@ -75,7 +73,7 @@
         </view>
       </view>
     </view>
-  </view>
+  </PageLayout>
 </template>
 
 <script setup lang="ts">
@@ -85,8 +83,7 @@ import TButton from 'tdesign-uniapp/button/button.vue'
 import TIcon from 'tdesign-uniapp/icon/icon.vue'
 import TImage from 'tdesign-uniapp/image/image.vue'
 import TSearch from 'tdesign-uniapp/search/search.vue'
-import AppHeader from '@/components/common/AppHeader.vue'
-import StickyPageTop from '@/components/common/layout/StickyPageTop.vue'
+import PageLayout from '@/components/common/layout/PageLayout.vue'
 import { useUserStore } from '@/stores'
 
 const STORE_KEY = 'rfkj_current_store'

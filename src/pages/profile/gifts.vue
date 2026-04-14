@@ -1,10 +1,8 @@
 <template>
-  <view class="pending-gifts">
-    <app-header title="待取礼品" :back="true" />
-
-    <sticky-page-top :height-rpx="104">
+  <PageLayout class="pending-gifts" title="待取礼品" :back="true" :fixed-header-height="104">
+    <template #fixed-header>
       <top-tabs v-model="activeTab" :items="displayTabs" />
-    </sticky-page-top>
+    </template>
 
     <view class="pending-gifts__list">
       <view
@@ -46,15 +44,14 @@
       @update:visible="qrVisible = $event"
       @action="confirmPickup"
     />
-  </view>
+  </PageLayout>
 </template>
 
 <script setup lang="ts">
 import { computed, reactive, ref } from 'vue'
 import { onShow } from '@dcloudio/uni-app'
-import AppHeader from '@/components/common/AppHeader.vue'
+import PageLayout from '@/components/common/layout/PageLayout.vue'
 import QrCodePopup from '@/components/common/popup/QrCodePopup.vue'
-import StickyPageTop from '@/components/common/layout/StickyPageTop.vue'
 import TopTabs from '@/components/common/layout/TopTabs.vue'
 import { getPendingGiftData, type PendingGiftData, type PendingGiftItem, type PendingGiftTab } from '@/services/profile'
 import { guardRouteAccess } from '@/utils/auth'
