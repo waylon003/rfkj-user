@@ -1,7 +1,13 @@
 <template>
   <view class="app-header" :style="{ height: `${headerHeight}px` }">
-    <view class="app-header__fixed" :style="{ paddingTop: `${statusBarHeight}px` }">
-      <view class="app-header__bar">
+    <view class="app-header__fixed" :style="{ height: `${headerHeight}px` }">
+      <view
+        class="app-header__bar"
+        :style="{
+          top: `${barTop}px`,
+          minHeight: `${barHeight}px`
+        }"
+      >
       <view v-if="back" class="app-header__back" @click="goBack">‹</view>
       <view v-else class="app-header__back app-header__back--placeholder"></view>
       <view class="app-header__titles">
@@ -33,7 +39,12 @@ withDefaults(defineProps<Props>(), {
 
 const appStore = useAppStore()
 const statusBarHeight = computed(() => appStore.statusBarHeight)
-const headerHeight = computed(() => statusBarHeight.value + uni.upx2px(146))
+const barTop = computed(() => appStore.menuButtonTop)
+const barHeight = computed(() => appStore.menuButtonHeight)
+const headerHeight = computed(() => {
+  const topGap = Math.max(appStore.menuButtonTop - statusBarHeight.value, 6)
+  return statusBarHeight.value + topGap * 2 + appStore.menuButtonHeight
+})
 
 function goBack() {
   const pages = getCurrentPages()
@@ -64,8 +75,10 @@ function goBack() {
 }
 
 .app-header__bar {
-  min-height: 104rpx;
-  padding: 18rpx 30rpx 24rpx;
+  position: absolute;
+  left: 0;
+  right: 0;
+  padding: 0 30rpx;
   display: flex;
   align-items: center;
 }

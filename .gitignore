@@ -2,3 +2,15 @@
 dist/
 .mcp-artifacts/
 .hbuilderx/
+.env.local
+after-*.png
+current-*.png
+current-home-snapshot.md
+design-*.png
+figma-*.png
+home-*-window.png
+profile-*.png
+prototype-*.png
+activity-main-window.png
+bill-window*.png
+devtools-window*.png

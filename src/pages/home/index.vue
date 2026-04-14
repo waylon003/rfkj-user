@@ -1,13 +1,23 @@
 <template>
   <view class="page-home">
-    <view class="home-topbar">
-      <view class="home-store" @click="showStorePicker">
-        <TIcon name="location" size="28rpx" color="#ffffff" />
-        <text class="home-store__name">{{ currentStore }}</text>
-        <TIcon name="chevron-down" size="24rpx" color="#ffffff" />
+    <view class="home-topbar" :style="{ height: `${headerHeight}px` }">
+      <view class="home-topbar__fixed" :style="{ height: `${headerHeight}px` }">
+        <view
+          class="home-topbar__bar"
+          :style="{
+            top: `${barTop}px`,
+            minHeight: `${barHeight}px`
+          }"
+        >
+          <view class="home-store" @click="showStorePicker">
+            <TIcon name="location" size="28rpx" color="#ffffff" />
+            <text class="home-store__name">{{ currentStore }}</text>
+            <TIcon name="chevron-down" size="24rpx" color="#ffffff" />
+          </view>
+          <text class="home-title">首页</text>
+          <view class="home-topbar__placeholder" :style="{ minWidth: `${menuButtonWidth}px` }"></view>
+        </view>
       </view>
-      <text class="home-title">首页</text>
-      <view class="home-topbar__placeholder"></view>
     </view>
 
     <view class="page-home__content">
@@ -161,6 +171,13 @@ const actionItems = computed(() =>
 )
 const isGuest = computed(() => userStore.isGuest)
 const currentStore = computed(() => userStore.selectedStoreName || defaultStore)
+const barTop = computed(() => appStore.menuButtonTop)
+const barHeight = computed(() => appStore.menuButtonHeight)
+const menuButtonWidth = computed(() => appStore.menuButtonWidth)
+const headerHeight = computed(() => {
+  const topGap = Math.max(appStore.menuButtonTop - appStore.statusBarHeight, 6)
+  return appStore.statusBarHeight + topGap * 2 + appStore.menuButtonHeight
+})
 const displayUser = computed(() =>
   isGuest.value
     ? {
@@ -395,20 +412,36 @@ function stopQrRefreshTimer() {
 }
 
 .home-topbar {
+  position: relative;
+  width: 100vw;
+  margin-left: calc(50% - 50vw);
+}
+
+.home-topbar__fixed {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  background: linear-gradient(180deg, $primary-dark 0%, $primary-light 100%);
+  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.1);
+}
+
+.home-topbar__bar {
+  position: absolute;
+  left: 0;
+  right: 0;
   display: grid;
   grid-template-columns: 1fr auto 1fr;
   align-items: center;
   gap: 16rpx;
-  min-height: 176rpx;
-  padding: 104rpx 24rpx 32rpx;
-  background: linear-gradient(180deg, $primary-dark 0%, $primary-light 100%);
-  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.1);
+  padding: 0 24rpx;
 }
 
 .home-store {
   display: inline-flex;
   align-items: center;
-  height: 56rpx;
+  min-height: 100%;
   min-width: 0;
   color: #fff;
 }
@@ -433,7 +466,7 @@ function stopQrRefreshTimer() {
 }
 
 .home-topbar__placeholder {
-  height: 56rpx;
+  height: 100%;
 }
 
 .page-home__content {
