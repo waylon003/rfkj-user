@@ -1,5 +1,5 @@
 <template>
-  <PageLayout class="coupon-select" title="选择优惠卷" :back="true">
+  <PageLayout class="coupon-select" title="选择优惠卷" :back="true" :content-bottom-space="140">
     <view class="coupon-section">
       <view class="coupon-section__head">
         <view class="coupon-section__head-left">
@@ -179,7 +179,6 @@ function toggleUnavailable() {
 .coupon-select {
   min-height: 100vh;
   background: $page-bg;
-  padding-bottom: 140rpx;
 }
 
 .coupon-section {

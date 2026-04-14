@@ -27,6 +27,11 @@
 
     <slot name="sticky"></slot>
     <slot></slot>
+    <view
+      v-if="contentBottomSpace > 0"
+      class="page-layout__bottom-space"
+      :style="{ height: `${contentBottomSpace}rpx` }"
+    ></view>
     <slot name="overlay"></slot>
 
     <AuthDialog
@@ -57,6 +62,7 @@ const props = withDefaults(
     fixedHeaderHeight?: number
     fixedHeaderBackground?: string
     fixedHeaderZIndex?: number
+    contentBottomSpace?: number
   }>(),
   {
     title: '',
@@ -66,7 +72,8 @@ const props = withDefaults(
     showAuthDialog: false,
     fixedHeaderHeight: 0,
     fixedHeaderBackground: '#ffffff',
-    fixedHeaderZIndex: 90
+    fixedHeaderZIndex: 90,
+    contentBottomSpace: 0
   }
 )
 
@@ -94,5 +101,10 @@ const headerHeight = computed(() => {
 
 .page-layout__fixed-header-placeholder {
   width: 100%;
+}
+
+.page-layout__bottom-space {
+  width: 100%;
+  flex: 0 0 auto;
 }
 </style>

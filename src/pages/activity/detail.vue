@@ -1,5 +1,5 @@
 <template>
-  <PageLayout class="activity-detail" title="活动详情" :back="true">
+  <PageLayout class="activity-detail" title="活动详情" :back="true" :content-bottom-space="176">
     <view class="activity-detail__content">
       <view class="detail-card">
         <view class="detail-card__cover">
@@ -161,7 +161,6 @@ function mapDetailByStore(source: ActivityDetailData) {
 
 .activity-detail {
   min-height: 100vh;
-  padding-bottom: calc(176rpx + env(safe-area-inset-bottom));
   background: $page-bg;
 }
 

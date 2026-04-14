@@ -1,5 +1,5 @@
 <template>
-  <PageLayout class="coin-page" title="购币中心" :back="true">
+  <PageLayout class="coin-page" title="购币中心" :back="true" :content-bottom-space="132">
     <view class="coin-page__content">
       <balance-card
         :label="pageData.balanceLabel"
@@ -322,7 +322,6 @@ function getCountdownText(endAt: string, currentTime: number) {
 
 .coin-page {
   min-height: 100vh;
-  padding-bottom: 132rpx;
   background: $page-bg;
 }
 

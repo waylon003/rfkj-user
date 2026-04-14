@@ -1,5 +1,5 @@
 <template>
-  <PageLayout class="point-payment" title="积分付" :back="true">
+  <PageLayout class="point-payment" title="积分付" :back="true" :content-bottom-space="140">
     <balance-card label="当前积分余额" :value="pageData.balance" unit="张" />
 
     <view class="point-payment__panel">
@@ -73,7 +73,6 @@ async function handleConfirm() {
 .point-payment {
   min-height: 100vh;
   background: $page-bg;
-  padding-bottom: 140rpx;
 }
 
 :deep(.balance-card) {

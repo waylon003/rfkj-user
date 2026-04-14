@@ -1,5 +1,5 @@
 <template>
-  <PageLayout class="ticket-deduction" title="彩票抵扣" :back="true">
+  <PageLayout class="ticket-deduction" title="彩票抵扣" :back="true" :content-bottom-space="140">
     <balance-card label="当前彩票余额" :value="pageData.balance" unit="张" />
 
     <view class="ticket-deduction__panel">
@@ -70,7 +70,6 @@ async function handleConfirm() {
 .ticket-deduction {
   min-height: 100vh;
   background: $page-bg;
-  padding-bottom: 140rpx;
 }
 
 :deep(.balance-card) {
