@@ -1,7 +1,6 @@
 <template>
-  <view class="ranking-page">
-    <app-header title="排名" />
-
+  <PageLayout class="ranking-page" title="排名" tabbar="ranking">
+    <template #sticky>
     <sticky-page-top :height-rpx="104">
       <view class="ranking-tabs">
         <t-tabs
@@ -20,6 +19,7 @@
         </t-tabs>
       </view>
     </sticky-page-top>
+    </template>
 
     <view v-if="machineSelectOpen" class="ranking-filter-mask" @click="machineSelectOpen = false"></view>
 
@@ -106,14 +106,12 @@
       </view>
     </view>
 
-    <CustomTabBar model-value="ranking" />
-  </view>
+  </PageLayout>
 </template>
 
 <script setup lang="ts">
 import { computed, reactive, ref } from 'vue'
-import AppHeader from '@/components/common/AppHeader.vue'
-import CustomTabBar from '@/components/common/layout/CustomTabBar.vue'
+import PageLayout from '@/components/common/layout/PageLayout.vue'
 import StickyPageTop from '@/components/common/layout/StickyPageTop.vue'
 import TIcon from 'tdesign-uniapp/icon/icon.vue'
 import {

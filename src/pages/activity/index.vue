@@ -1,7 +1,5 @@
 <template>
-  <view class="page-activity">
-    <app-header title="活动" />
-
+  <PageLayout class="page-activity" title="活动" tabbar="activity">
     <view class="activity-list">
       <view
         v-for="item in displayCards"
@@ -28,15 +26,12 @@
         </view>
       </view>
     </view>
-
-    <CustomTabBar model-value="activity" />
-  </view>
+  </PageLayout>
 </template>
 
 <script setup lang="ts">
 import { computed, reactive } from 'vue'
-import AppHeader from '@/components/common/AppHeader.vue'
-import CustomTabBar from '@/components/common/layout/CustomTabBar.vue'
+import PageLayout from '@/components/common/layout/PageLayout.vue'
 import {
   getActivityHubData,
   type ActivityHubData

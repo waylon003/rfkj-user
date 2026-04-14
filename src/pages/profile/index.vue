@@ -1,5 +1,5 @@
 <template>
-  <view class="page-profile">
+  <PageLayout class="page-profile" tabbar="profile" :show-auth-dialog="true">
     <view class="my-hero">
       <view class="my-hero__glow my-hero__glow--left"></view>
       <view class="my-hero__glow my-hero__glow--right"></view>
@@ -58,20 +58,12 @@
       </view>
     </view>
 
-    <AuthDialog
-      :visible="appStore.authDialogVisible"
-      :scene="appStore.authDialogScene"
-      @update:visible="appStore.setAuthDialogVisible"
-    />
-
-    <CustomTabBar model-value="profile" />
-  </view>
+  </PageLayout>
 </template>
 
 <script setup lang="ts">
 import { computed, reactive } from 'vue'
-import AuthDialog from '@/components/common/auth/AuthDialog.vue'
-import CustomTabBar from '@/components/common/layout/CustomTabBar.vue'
+import PageLayout from '@/components/common/layout/PageLayout.vue'
 import { getProfileCenterData, type ProfileCenterData } from '@/services/profile'
 import { useAppStore, useUserStore } from '@/stores'
 import { getAuthSceneForRoute, requireLogin } from '@/utils/auth'

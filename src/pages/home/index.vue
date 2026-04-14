@@ -1,5 +1,6 @@
 <template>
-  <view class="page-home">
+  <PageLayout class="page-home" tabbar="home" :show-auth-dialog="true">
+    <template #header>
     <view class="home-topbar" :style="{ height: `${headerHeight}px` }">
       <view class="home-topbar__fixed" :style="{ height: `${headerHeight}px` }">
         <view
@@ -19,6 +20,7 @@
         </view>
       </view>
     </view>
+    </template>
 
     <view class="page-home__content">
       <view class="banner-card">
@@ -97,12 +99,6 @@
       </view>
     </view>
 
-    <AuthDialog
-      :visible="appStore.authDialogVisible"
-      :scene="appStore.authDialogScene"
-      @update:visible="appStore.setAuthDialogVisible"
-    />
-
     <QrCodePopup
       :visible="memberQrVisible"
       title="会员二维码"
@@ -112,9 +108,7 @@
       @update:visible="memberQrVisible = $event"
       @action="refreshMemberQr"
     />
-
-    <CustomTabBar model-value="home" />
-  </view>
+  </PageLayout>
 </template>
 
 <script setup lang="ts">
@@ -123,8 +117,7 @@ import { onHide, onShow, onUnload } from '@dcloudio/uni-app'
 import TButton from 'tdesign-uniapp/button/button.vue'
 import TIcon from 'tdesign-uniapp/icon/icon.vue'
 import TQRCode from 'tdesign-uniapp/qrcode/qrcode.vue'
-import AuthDialog from '@/components/common/auth/AuthDialog.vue'
-import CustomTabBar from '@/components/common/layout/CustomTabBar.vue'
+import PageLayout from '@/components/common/layout/PageLayout.vue'
 import QrCodePopup from '@/components/common/popup/QrCodePopup.vue'
 import { getHomePageData, type HomePageData } from '@/services/home'
 import { useAppStore, useUserStore } from '@/stores'
