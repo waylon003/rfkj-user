@@ -1,0 +1,19 @@
+{
+  "name": "如风科技用户端",
+  "appid": "__UNI__RFKJ_USER",
+  "description": "如风科技 C 端小程序",
+  "versionName": "0.1.0",
+  "versionCode": "1",
+  "transformPx": false,
+  "mp-weixin": {
+    "appid": "wx5f393e2dce4b78dd",
+    "setting": {
+      "urlCheck": false
+    },
+    "usingComponents": true
+  },
+  "uniStatistics": {
+    "enable": false
+  },
+  "vueVersion": "3"
+}

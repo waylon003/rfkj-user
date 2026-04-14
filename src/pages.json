@@ -1,0 +1,212 @@
+{
+  "easycom": {
+    "custom": {
+      "^t-(.*)": "tdesign-uniapp/$1/$1.vue"
+    }
+  },
+  "componentFramework": "glass-easel",
+  "componentPlaceholder": {
+    "t-button": "view",
+    "t-swiper": "view",
+    "t-swiper-nav": "view",
+    "t-cell": "view",
+    "t-cell-group": "view",
+    "t-popup": "view"
+  },
+  "pages": [
+    {
+      "path": "pages/home/index",
+      "style": {
+        "navigationStyle": "custom",
+        "backgroundColor": "#f4f8ff"
+      }
+    },
+    {
+      "path": "pages/home/store-select",
+      "style": {
+        "navigationStyle": "custom",
+        "backgroundColor": "#f4f8ff"
+      }
+    },
+    {
+      "path": "pages/home/store-detail",
+      "style": {
+        "navigationStyle": "custom",
+        "backgroundColor": "#f7f9fc"
+      }
+    },
+    {
+      "path": "pages/auth/privacy-policy",
+      "style": {
+        "navigationStyle": "custom",
+        "backgroundColor": "#f7f9fc"
+      }
+    },
+    {
+      "path": "pages/auth/member-terms",
+      "style": {
+        "navigationStyle": "custom",
+        "backgroundColor": "#f7f9fc"
+      }
+    },
+    {
+      "path": "pages/activity/index",
+      "style": {
+        "navigationStyle": "custom",
+        "backgroundColor": "#f4f8ff"
+      }
+    },
+    {
+      "path": "pages/ranking/index",
+      "style": {
+        "navigationStyle": "custom",
+        "backgroundColor": "#f4f8ff"
+      }
+    },
+    {
+      "path": "pages/activity/detail",
+      "style": {
+        "navigationStyle": "custom",
+        "backgroundColor": "#f7f9fc"
+      }
+    },
+    {
+      "path": "pages/profile/index",
+      "style": {
+        "navigationStyle": "custom",
+        "backgroundColor": "#f4f8ff"
+      }
+    },
+    {
+      "path": "pages/profile/info",
+      "style": {
+        "navigationStyle": "custom",
+        "backgroundColor": "#f7f9fc"
+      }
+    },
+    {
+      "path": "pages/profile/gift-records",
+      "style": {
+        "navigationStyle": "custom",
+        "backgroundColor": "#f7f9fc"
+      }
+    },
+    {
+      "path": "pages/profile/gifts",
+      "style": {
+        "navigationStyle": "custom",
+        "backgroundColor": "#f7f9fc"
+      }
+    },
+    {
+      "path": "pages/profile/bill",
+      "style": {
+        "navigationStyle": "custom",
+        "backgroundColor": "#f7f9fc"
+      }
+    }
+  ],
+  "subPackages": [
+    {
+      "root": "pages/member",
+      "name": "member",
+      "pages": [
+        {
+          "path": "tickets",
+          "style": {
+            "navigationStyle": "custom",
+            "backgroundColor": "#f4f8ff"
+          }
+        },
+        {
+          "path": "gift",
+          "style": {
+            "navigationStyle": "custom",
+            "backgroundColor": "#f4f8ff"
+          }
+        }
+      ]
+    },
+    {
+      "root": "pages/coin",
+      "name": "coin",
+      "pages": [
+        {
+          "path": "recharge",
+          "style": {
+            "navigationStyle": "custom",
+            "backgroundColor": "#f4f8ff"
+          }
+        },
+        {
+          "path": "custom-amount",
+          "style": {
+            "navigationStyle": "custom",
+            "backgroundColor": "#ffffff",
+            "disableScroll": true
+          }
+        },
+        {
+          "path": "ticket-deduction",
+          "style": {
+            "navigationStyle": "custom",
+            "backgroundColor": "#f7f9fc"
+          }
+        },
+        {
+          "path": "point-payment",
+          "style": {
+            "navigationStyle": "custom",
+            "backgroundColor": "#f7f9fc"
+          }
+        },
+        {
+          "path": "success",
+          "style": {
+            "navigationStyle": "custom",
+            "backgroundColor": "#ffffff"
+          }
+        }
+      ]
+    },
+    {
+      "root": "pages/points",
+      "name": "points",
+      "pages": [
+        {
+          "path": "exchange",
+          "style": {
+            "navigationStyle": "custom",
+            "backgroundColor": "#f4f8ff"
+          }
+        }
+      ]
+    },
+    {
+      "root": "pages/coupon",
+      "name": "coupon",
+      "pages": [
+        {
+          "path": "center",
+          "style": {
+            "navigationStyle": "custom",
+            "backgroundColor": "#f4f8ff"
+          }
+        },
+        {
+          "path": "select",
+          "style": {
+            "navigationStyle": "custom",
+            "backgroundColor": "#f7f9fc"
+          }
+        }
+      ]
+    }
+  ],
+  "globalStyle": {
+    "navigationBarTextStyle": "white",
+    "navigationBarTitleText": "如风科技",
+    "navigationBarBackgroundColor": "#2F8CFF",
+    "backgroundColor": "#f4f8ff"
+  }
+}

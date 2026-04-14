@@ -1,0 +1,52 @@
+$page-bg: #f7f9fc;
+$card-bg: #ffffff;
+$surface-soft: #eff6ff;
+$surface-placeholder: #cdd6e3;
+$surface-avatar: #e3e8f0;
+$public-demo-image-1: "https://tdesign.gtimg.com/mobile/demos/swiper1.png";
+$public-demo-image-2: "https://tdesign.gtimg.com/mobile/demos/swiper2.png";
+$public-demo-image-3: "https://tdesign.gtimg.com/mobile/demos/swiper3.png";
+$primary: #155dfc;
+$primary-dark: #1a73e8;
+$primary-light: #42a5f5;
+$primary-soft: #eff6ff;
+$text-primary: #0f172a;
+$text-strong: #1f2a3a;
+$text-secondary: #4b5b73;
+$text-tertiary: #6b7c93;
+$text-light: rgba(255, 255, 255, 0.82);
+$border-light: #eef2f7;
+$success: #16b36b;
+$warning: #ff8a00;
+$danger: #f15b5b;
+
+$radius-sm: 18rpx;
+$radius-md: 24rpx;
+$radius-lg: 32rpx;
+$radius-xl: 40rpx;
+$radius-pill: 9999rpx;
+
+$shadow-card: 0 8rpx 12rpx rgba(0, 0, 0, 0.08);
+$shadow-soft: 0 8rpx 30rpx rgba(33, 86, 167, 0.08);
+
+$font-xs: 20rpx;
+$font-sm: 24rpx;
+$font-base: 28rpx;
+$font-md: 32rpx;
+$font-lg: 36rpx;
+$font-xl: 42rpx;
+$font-2xl: 56rpx;
+
+@mixin frosted-card {
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: $shadow-card;
+  backdrop-filter: blur(20rpx);
+}
+
+@mixin public-cover($image-url) {
+  background-color: $surface-avatar;
+  background-image: url(#{$image-url});
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: cover;
+}

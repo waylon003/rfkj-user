@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="86" height="86" viewBox="0 0 86 86" fill="none">
+  <rect width="86" height="86" rx="8" fill="#FFFFFF"/>
+  <ellipse cx="43" cy="79" rx="19" ry="4.5" fill="#D8E0ED"/>
+  <path d="M27 24C27 13.5066 35.5066 5 46 5C56.4934 5 65 13.5066 65 24V42C65 52.4934 56.4934 61 46 61C35.5066 61 27 52.4934 27 42V24Z" fill="#FFFDFD" stroke="#3B2A1B" stroke-width="2.5"/>
+  <path d="M31 13L23 22L35 24L31 13Z" fill="#FFFDFD" stroke="#3B2A1B" stroke-width="2.5" stroke-linejoin="round"/>
+  <path d="M57 13L49 24L61 22L57 13Z" fill="#FFFDFD" stroke="#3B2A1B" stroke-width="2.5" stroke-linejoin="round"/>
+  <ellipse cx="35" cy="30" rx="3.2" ry="4.2" fill="#2A201A"/>
+  <ellipse cx="54" cy="30" rx="3.2" ry="4.2" fill="#2A201A"/>
+  <ellipse cx="30.5" cy="38" rx="4.5" ry="3.5" fill="#FFD2DA"/>
+  <ellipse cx="59" cy="38" rx="4.5" ry="3.5" fill="#FFD2DA"/>
+  <ellipse cx="45" cy="36" rx="3.5" ry="2.6" fill="#F4B43E"/>
+  <path d="M19 29H28" stroke="#3B2A1B" stroke-width="2" stroke-linecap="round"/>
+  <path d="M20 35H28" stroke="#3B2A1B" stroke-width="2" stroke-linecap="round"/>
+  <path d="M62 29H70" stroke="#3B2A1B" stroke-width="2" stroke-linecap="round"/>
+  <path d="M62 35H69" stroke="#3B2A1B" stroke-width="2" stroke-linecap="round"/>
+  <path d="M26 50C26 42.8203 31.8203 37 39 37H47C54.1797 37 60 42.8203 60 50V61H26V50Z" fill="#1B4E9F"/>
+  <path d="M32 46H54V61H32V46Z" fill="#173E7F"/>
+  <path d="M34 43H52L49 50H37L34 43Z" fill="#FFFFFF"/>
+  <circle cx="41" cy="54" r="1.8" fill="#F4D4A7"/>
+  <circle cx="47" cy="54" r="1.8" fill="#F4D4A7"/>
+  <path d="M35 61V70C35 73.866 31.866 77 28 77V77" stroke="#3B2A1B" stroke-width="2.5" stroke-linecap="round"/>
+  <path d="M51 61V70C51 73.866 54.134 77 58 77V77" stroke="#3B2A1B" stroke-width="2.5" stroke-linecap="round"/>
+  <path d="M32 62L27 70" stroke="#3B2A1B" stroke-width="2.5" stroke-linecap="round"/>
+  <path d="M54 62L59 70" stroke="#3B2A1B" stroke-width="2.5" stroke-linecap="round"/>
+  <path d="M56 15C56 10.5817 59.5817 7 64 7C68.4183 7 72 10.5817 72 15C72 19.4183 68.4183 23 64 23C59.5817 23 56 19.4183 56 15Z" fill="#FF768F"/>
+  <path d="M52.5 15.5C52.5 11.3579 55.8579 8 60 8H61L59 23H60C55.8579 23 52.5 19.6421 52.5 15.5Z" fill="#FF8DA1"/>
+  <path d="M67 8H68C72.1421 8 75.5 11.3579 75.5 15.5C75.5 19.6421 72.1421 23 68 23H67L65 8H67Z" fill="#FF8DA1"/>
+  <circle cx="64" cy="15.5" r="4.5" fill="#FFC1CC"/>
+  <rect x="47" y="56" width="12" height="13" rx="1.8" transform="rotate(12 47 56)" fill="#DCC4A7" stroke="#7A5A3F" stroke-width="1.6"/>
+  <path d="M49 59H57" stroke="#7A5A3F" stroke-width="1.4" stroke-linecap="round"/>
+  <path d="M50.5 62.5H55.5" stroke="#7A5A3F" stroke-width="1.4" stroke-linecap="round"/>
+</svg>
