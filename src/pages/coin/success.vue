@@ -1,5 +1,5 @@
 <template>
-  <view class="coin-success">
+  <PageLayout class="coin-success">
     <view class="coin-success__icon">✓</view>
     <text class="coin-success__title">{{ pageData.title }}</text>
     <view class="coin-success__amount-line">
@@ -9,11 +9,12 @@
     <text class="coin-success__subtitle">{{ pageData.subtitle }}</text>
 
     <view class="coin-success__button" @click="goBack">确定</view>
-  </view>
+  </PageLayout>
 </template>
 
 <script setup lang="ts">
 import { reactive } from 'vue'
+import PageLayout from '@/components/common/layout/PageLayout.vue'
 import { getPaymentSuccessData, type PaymentSuccessData } from '@/services/purchase'
 
 const pageData = reactive<PaymentSuccessData>({

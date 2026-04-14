@@ -1,5 +1,6 @@
 <template>
-  <view class="profile-info">
+  <PageLayout class="profile-info">
+    <template #header>
     <profile-hero :back="true">
       <view class="profile-info__identity">
         <view class="profile-info__avatar"></view>
@@ -7,6 +8,7 @@
         <text class="profile-info__id">{{ displayMemberId }}</text>
       </view>
     </profile-hero>
+    </template>
 
     <view
       v-for="section in displaySections"
@@ -51,13 +53,14 @@
         </template>
       </popup-panel>
     </t-popup>
-  </view>
+  </PageLayout>
 </template>
 
 <script setup lang="ts">
 import { computed, reactive, ref } from 'vue'
 import { onShow } from '@dcloudio/uni-app'
 import TInput from 'tdesign-uniapp/input/input.vue'
+import PageLayout from '@/components/common/layout/PageLayout.vue'
 import ProfileHero from '@/components/common/layout/ProfileHero.vue'
 import SectionCard from '@/components/common/layout/SectionCard.vue'
 import PopupPanel from '@/components/common/popup/PopupPanel.vue'
