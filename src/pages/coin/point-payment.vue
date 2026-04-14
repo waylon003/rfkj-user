@@ -1,7 +1,5 @@
 <template>
-  <view class="point-payment">
-    <app-header title="积分付" :back="true" />
-
+  <PageLayout class="point-payment" title="积分付" :back="true">
     <balance-card label="当前积分余额" :value="pageData.balance" unit="张" />
 
     <view class="point-payment__panel">
@@ -32,12 +30,12 @@
     <bottom-action-bar class="point-payment__footer" padding-top="16rpx" padding-bottom="16rpx">
       <view class="point-payment__button" @click="handleConfirm">确定</view>
     </bottom-action-bar>
-  </view>
+  </PageLayout>
 </template>
 
 <script setup lang="ts">
 import { reactive } from 'vue'
-import AppHeader from '@/components/common/AppHeader.vue'
+import PageLayout from '@/components/common/layout/PageLayout.vue'
 import BalanceCard from '@/components/common/layout/BalanceCard.vue'
 import BottomActionBar from '@/components/common/layout/BottomActionBar.vue'
 import {

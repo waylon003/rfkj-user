@@ -1,7 +1,5 @@
 <template>
-  <view class="sub-page">
-    <app-header title="优惠券中心" subtitle="活动券、充值券统一归 coupon 模块" back />
-
+  <PageLayout class="sub-page" title="优惠券中心" subtitle="活动券、充值券统一归 coupon 模块" :back="true">
     <view class="sub-page__inner">
       <view class="focus-card">
         <text class="focus-card__label">可领取权益</text>
@@ -26,11 +24,11 @@
 
       <view class="primary-button">一键领取</view>
     </view>
-  </view>
+  </PageLayout>
 </template>
 
 <script setup lang="ts">
-import AppHeader from '@/components/common/AppHeader.vue'
+import PageLayout from '@/components/common/layout/PageLayout.vue'
 </script>
 
 <style scoped lang="scss">

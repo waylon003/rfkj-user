@@ -1,7 +1,5 @@
 <template>
-  <view class="point-gifts">
-    <app-header title="积分兑礼品" :back="true" />
-
+  <PageLayout class="point-gifts" title="积分兑礼品" :back="true">
     <view class="point-gifts__content">
       <balance-card
         label="当前积分"
@@ -77,13 +75,13 @@
         </template>
       </popup-panel>
     </t-popup>
-  </view>
+  </PageLayout>
 </template>
 
 <script setup lang="ts">
 import { computed, reactive, ref } from 'vue'
 import { onShow } from '@dcloudio/uni-app'
-import AppHeader from '@/components/common/AppHeader.vue'
+import PageLayout from '@/components/common/layout/PageLayout.vue'
 import BalanceCard from '@/components/common/layout/BalanceCard.vue'
 import PopupPanel from '@/components/common/popup/PopupPanel.vue'
 import PopupPrimaryButton from '@/components/common/popup/PopupPrimaryButton.vue'

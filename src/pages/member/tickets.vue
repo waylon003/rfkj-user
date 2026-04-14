@@ -1,7 +1,5 @@
 <template>
-  <view class="ticket-exchange">
-    <app-header title="彩票兑积分" :back="true" />
-
+  <PageLayout class="ticket-exchange" title="彩票兑积分" :back="true">
     <view class="ticket-exchange__content">
       <view class="ticket-exchange__balance-card">
         <view class="ticket-exchange__balance-block">
@@ -39,13 +37,13 @@
 
       <view class="ticket-exchange__submit" @click="submitExchange">立即兑换</view>
     </view>
-  </view>
+  </PageLayout>
 </template>
 
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import { onShow } from '@dcloudio/uni-app'
-import AppHeader from '@/components/common/AppHeader.vue'
+import PageLayout from '@/components/common/layout/PageLayout.vue'
 import { guardRouteAccess } from '@/utils/auth'
 import { useUserStore } from '@/stores'
 

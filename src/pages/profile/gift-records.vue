@@ -1,7 +1,5 @@
 <template>
-  <view class="gift-records">
-    <app-header title="互赠记录" :back="true" />
-
+  <PageLayout class="gift-records" title="互赠记录" :back="true">
     <view class="gift-records__content">
       <view class="gift-records__summary">
         <text class="gift-records__summary-line">当前会员：{{ displayMemberId }}</text>
@@ -49,13 +47,13 @@
       @update:visible="qrVisible = $event"
       @action="qrVisible = false"
     />
-  </view>
+  </PageLayout>
 </template>
 
 <script setup lang="ts">
 import { computed, reactive, ref } from 'vue'
 import { onShow } from '@dcloudio/uni-app'
-import AppHeader from '@/components/common/AppHeader.vue'
+import PageLayout from '@/components/common/layout/PageLayout.vue'
 import QrCodePopup from '@/components/common/popup/QrCodePopup.vue'
 import { getGiftRecordData, type GiftRecordData, type GiftRecordItem } from '@/services/profile'
 import { guardRouteAccess } from '@/utils/auth'

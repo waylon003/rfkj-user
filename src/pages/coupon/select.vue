@@ -1,7 +1,5 @@
 <template>
-  <view class="coupon-select">
-    <app-header title="选择优惠卷" :back="true" />
-
+  <PageLayout class="coupon-select" title="选择优惠卷" :back="true">
     <view class="coupon-section">
       <view class="coupon-section__head">
         <view class="coupon-section__head-left">
@@ -93,12 +91,12 @@
     <bottom-action-bar class="coupon-select__footer" padding-top="16rpx" padding-bottom="16rpx">
       <view class="coupon-select__button" @click="handleConfirm">确定使用</view>
     </bottom-action-bar>
-  </view>
+  </PageLayout>
 </template>
 
 <script setup lang="ts">
 import { computed, reactive, ref } from 'vue'
-import AppHeader from '@/components/common/AppHeader.vue'
+import PageLayout from '@/components/common/layout/PageLayout.vue'
 import BottomActionBar from '@/components/common/layout/BottomActionBar.vue'
 import {
   confirmCouponSelection,

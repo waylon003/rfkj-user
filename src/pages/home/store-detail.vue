@@ -1,7 +1,5 @@
 <template>
-  <view class="store-detail-page">
-    <app-header title="门店详情" :back="true" />
-
+  <PageLayout class="store-detail-page" title="门店详情" :back="true">
     <view class="store-detail-page__content">
       <view class="store-detail-card">
         <image class="store-detail-card__cover" :src="store.cover" mode="aspectFill" />
@@ -27,14 +25,14 @@
         <t-button theme="primary" shape="round" block @click="openNavigation">门店导航</t-button>
       </view>
     </view>
-  </view>
+  </PageLayout>
 </template>
 
 <script setup lang="ts">
 import { reactive } from 'vue'
 import { onLoad } from '@dcloudio/uni-app'
 import TButton from 'tdesign-uniapp/button/button.vue'
-import AppHeader from '@/components/common/AppHeader.vue'
+import PageLayout from '@/components/common/layout/PageLayout.vue'
 
 interface StoreDetail {
   name: string

@@ -1,7 +1,5 @@
 <template>
-  <view class="gift-page">
-    <app-header title="赠送游戏币" :back="true" />
-
+  <PageLayout class="gift-page" title="赠送游戏币" :back="true">
     <view class="gift-page__content">
       <view class="gift-page__balance">
         <text class="gift-page__balance-label">当前可用游戏币</text>
@@ -37,13 +35,13 @@
       @update:visible="qrVisible = $event"
       @action="qrVisible = false"
     />
-  </view>
+  </PageLayout>
 </template>
 
 <script setup lang="ts">
 import { computed, reactive, ref } from 'vue'
 import { onShow } from '@dcloudio/uni-app'
-import AppHeader from '@/components/common/AppHeader.vue'
+import PageLayout from '@/components/common/layout/PageLayout.vue'
 import QrCodePopup from '@/components/common/popup/QrCodePopup.vue'
 import { getGiftCoinPageData, type GiftCoinPageData } from '@/services/member'
 import { guardRouteAccess } from '@/utils/auth'

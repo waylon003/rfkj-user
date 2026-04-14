@@ -1,7 +1,5 @@
 <template>
-  <view class="activity-detail">
-    <app-header title="活动详情" :back="true" />
-
+  <PageLayout class="activity-detail" title="活动详情" :back="true">
     <view class="activity-detail__content">
       <view class="detail-card">
         <view class="detail-card__cover">
@@ -31,13 +29,13 @@
         <text class="detail-footer__link detail-footer__link--primary" :class="{ 'detail-footer__link--disabled': !detail.nextId }" @click="goNext">下一个活动</text>
       </bottom-action-bar>
     </view>
-  </view>
+  </PageLayout>
 </template>
 
 <script setup lang="ts">
 import { computed, reactive, ref } from 'vue'
 import { onLoad, onUnload } from '@dcloudio/uni-app'
-import AppHeader from '@/components/common/AppHeader.vue'
+import PageLayout from '@/components/common/layout/PageLayout.vue'
 import BottomActionBar from '@/components/common/layout/BottomActionBar.vue'
 import { getActivityDetailData, type ActivityDetailData } from '@/services/activity'
 import { useUserStore } from '@/stores'

@@ -1,7 +1,5 @@
 <template>
-  <view class="custom-amount">
-    <app-header title="自定义数量" :back="true" />
-
+  <PageLayout class="custom-amount" title="自定义数量" :back="true">
     <view class="custom-amount__content">
       <view class="custom-amount__display">
         <view class="custom-amount__amount-line" :class="{ 'custom-amount__amount-line--active': isEditing }" @click="focusEditor">
@@ -41,12 +39,12 @@
         </view>
       </view>
     </view>
-  </view>
+  </PageLayout>
 </template>
 
 <script setup lang="ts">
 import { computed, reactive, ref } from 'vue'
-import AppHeader from '@/components/common/AppHeader.vue'
+import PageLayout from '@/components/common/layout/PageLayout.vue'
 import BottomActionBar from '@/components/common/layout/BottomActionBar.vue'
 import {
   appendCustomAmountKey,

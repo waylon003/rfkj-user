@@ -1,7 +1,5 @@
 <template>
-  <view class="policy-page">
-    <app-header title="隐私政策" :back="true" />
-
+  <PageLayout class="policy-page" title="隐私政策" :back="true">
     <view class="policy-page__content">
       <view class="policy-page__section">
         <text class="policy-page__title">隐私政策</text>
@@ -44,11 +42,11 @@
         </text>
       </view>
     </view>
-  </view>
+  </PageLayout>
 </template>
 
 <script setup lang="ts">
-import AppHeader from '@/components/common/AppHeader.vue'
+import PageLayout from '@/components/common/layout/PageLayout.vue'
 </script>
 
 <style scoped lang="scss">

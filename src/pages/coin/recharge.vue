@@ -1,7 +1,5 @@
 <template>
-  <view class="coin-page">
-    <app-header title="购币中心" :back="true" />
-
+  <PageLayout class="coin-page" title="购币中心" :back="true">
     <view class="coin-page__content">
       <balance-card
         :label="pageData.balanceLabel"
@@ -160,13 +158,13 @@
         </template>
       </popup-panel>
     </t-popup>
-  </view>
+  </PageLayout>
 </template>
 
 <script setup lang="ts">
 import { computed, reactive, ref } from 'vue'
 import { onHide, onShow, onUnload } from '@dcloudio/uni-app'
-import AppHeader from '@/components/common/AppHeader.vue'
+import PageLayout from '@/components/common/layout/PageLayout.vue'
 import BalanceCard from '@/components/common/layout/BalanceCard.vue'
 import BottomActionBar from '@/components/common/layout/BottomActionBar.vue'
 import PopupPanel from '@/components/common/popup/PopupPanel.vue'
