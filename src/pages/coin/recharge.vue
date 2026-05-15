@@ -10,41 +10,14 @@
       <view class="section-block">
         <view class="section-head">
           <view class="section-head__left">
-            <view class="section-head__accent section-head__accent--orange"></view>
-            <text class="section-head__title">限时特惠</text>
-          </view>
-          <text class="section-head__meta section-head__meta--orange">{{ featuredCountdownText }}</text>
-        </view>
-        <view class="special-grid">
-          <view
-            v-for="item in pageData.featuredPackages"
-            :key="item.id"
-            class="package-card package-card--special"
-            :class="{ 'package-card--selected': item.selected }"
-            @click="selectFeaturedPackage(item.id)"
-          >
-            <text v-if="item.badgeText" class="package-card__corner">{{ item.badgeText }}</text>
-            <text class="package-card__coin">{{ item.coinText }}</text>
-            <view class="package-card__price-row">
-              <text class="package-card__price">{{ formatMoney(item.price) }}</text>
-              <text v-if="item.originalPrice" class="package-card__origin">{{ formatMoney(item.originalPrice) }}</text>
-            </view>
-            <view class="package-card__stock">
-              <text class="iconfont package-card__stock-icon icon-ic_input_calendar"></text>
-              <text>{{ item.stockText }}</text>
-            </view>
-          </view>
-        </view>
-      </view>
-
-      <view class="section-block">
-        <view class="section-head">
-          <view class="section-head__left">
             <view class="section-head__accent"></view>
             <text class="section-head__title">基础套餐</text>
           </view>
         </view>
-        <view class="base-grid">
+        <view v-if="pageData.basePackages.length === 0" class="package-empty">
+          <text class="package-empty__text">暂无基础套餐</text>
+        </view>
+        <view v-else class="base-grid">
           <view
             v-for="item in pageData.basePackages"
             :key="item.id"
@@ -76,16 +49,6 @@
       </view>
 
       <view class="option-card">
-        <view class="option-card__row">
-          <view class="option-card__left">
-            <text class="iconfont option-card__icon" :class="pageData.coupon.iconClass"></text>
-            <text class="option-card__label">{{ pageData.coupon.label }}</text>
-          </view>
-          <view class="option-card__right" @click="goRoute(pageData.coupon.route)">
-            <text class="option-card__action">{{ pageData.coupon.valueText }}</text>
-            <text class="option-card__arrow">›</text>
-          </view>
-        </view>
         <view class="option-card__row">
           <view class="option-card__left">
             <text class="iconfont option-card__icon" :class="pageData.ticketDeduction.iconClass"></text>
@@ -163,7 +126,7 @@
 
 <script setup lang="ts">
 import { computed, reactive, ref } from 'vue'
-import { onHide, onShow, onUnload } from '@dcloudio/uni-app'
+import { onShow } from '@dcloudio/uni-app'
 import PageLayout from '@/components/common/layout/PageLayout.vue'
 import BalanceCard from '@/components/common/layout/BalanceCard.vue'
 import BottomActionBar from '@/components/common/layout/BottomActionBar.vue'
@@ -172,7 +135,6 @@ import PopupPrimaryButton from '@/components/common/popup/PopupPrimaryButton.vue
 import {
   getPurchaseCenterData,
   selectBasePackage as selectBasePackageAction,
-  selectFeaturedPackage as selectFeaturedPackageAction,
   type PurchaseCenterData
 } from '@/services/purchase'
 import { formatMoney } from '@/utils/format'
@@ -184,15 +146,8 @@ const pageData = reactive<PurchaseCenterData>({
   balanceLabel: '',
   balanceValue: '',
   balanceUnit: '',
-  featuredEndAt: '',
-  featuredPackages: [],
   basePackages: [],
   customAmount: {
-    id: '',
-    label: '',
-    valueText: ''
-  },
-  coupon: {
     id: '',
     label: '',
     valueText: ''
@@ -221,26 +176,19 @@ const pageData = reactive<PurchaseCenterData>({
   }
 })
 const paymentVisible = ref(false)
-const now = ref(Date.now())
-const featuredCountdownText = computed(() => getCountdownText(pageData.featuredEndAt, now.value))
-const displayBalance = computed(() =>
-  (userStore.profile.coin || Number(pageData.balanceValue || 0)).toLocaleString('zh-CN')
-)
-let countdownTimer: ReturnType<typeof setInterval> | undefined
+const displayBalance = computed(() => {
+  const coin = userStore.profile.coin
+  if (coin) return coin.toLocaleString('zh-CN')
+  const raw = (pageData.balanceValue || '0').replace(/,/g, '')
+  return Number(raw).toLocaleString('zh-CN')
+})
 
 loadPageData()
 onShow(() => {
   if (!guardRouteAccess('/pages/coin/recharge', '/pages/home/index')) {
     return
   }
-  startCountdown()
   void loadPageData()
-})
-onHide(() => {
-  stopCountdown()
-})
-onUnload(() => {
-  stopCountdown()
 })
 
 async function loadPageData() {
@@ -252,10 +200,6 @@ function goRoute(url?: string) {
     return
   }
   uni.navigateTo({ url })
-}
-
-async function selectFeaturedPackage(id: string) {
-  Object.assign(pageData, await selectFeaturedPackageAction(id))
 }
 
 async function selectBasePackage(id: string) {
@@ -271,50 +215,6 @@ function goSuccess() {
   uni.navigateTo({ url: '/pages/coin/success' })
 }
 
-function startCountdown() {
-  stopCountdown()
-  now.value = Date.now()
-  countdownTimer = setInterval(() => {
-    now.value = Date.now()
-  }, 1000)
-}
-
-function stopCountdown() {
-  if (!countdownTimer) {
-    return
-  }
-  clearInterval(countdownTimer)
-  countdownTimer = undefined
-}
-
-function getCountdownText(endAt: string, currentTime: number) {
-  if (!endAt) {
-    return '距离结束 00:00:00'
-  }
-
-  const diff = new Date(endAt).getTime() - currentTime
-  if (diff <= 0) {
-    return '距离结束 00:00:00'
-  }
-
-  const totalSeconds = Math.floor(diff / 1000)
-  const totalDays = Math.floor(totalSeconds / 86400)
-  if (totalDays >= 30) {
-    const months = Math.floor(totalDays / 30)
-    const days = totalDays % 30
-    return `距离结束 ${months}个月${days}天`
-  }
-
-  if (totalDays >= 1) {
-    const hours = Math.floor((totalSeconds % 86400) / 3600)
-    return `距离结束 ${totalDays}天${hours}小时`
-  }
-
-  const hours = String(Math.floor(totalSeconds / 3600)).padStart(2, '0')
-  const minutes = String(Math.floor((totalSeconds % 3600) / 60)).padStart(2, '0')
-  const seconds = String(totalSeconds % 60).padStart(2, '0')
-  return `距离结束 ${hours}:${minutes}:${seconds}`
-}
 </script>
 
 <style scoped lang="scss">
@@ -383,39 +283,15 @@ function getCountdownText(endAt: string, currentTime: number) {
   box-shadow: 0 0 8rpx rgba(37, 141, 232, 0.35);
 }
 
-.section-head__accent--orange {
-  background: #ff7a00;
-  box-shadow: 0 0 8rpx rgba(255, 122, 0, 0.28);
-}
-
 .section-head__title {
   margin-left: 10rpx;
   font-size: 26rpx;
   color: $text-strong;
 }
 
-.section-head__meta {
-  display: inline-flex;
-  align-items: center;
-  min-height: 34rpx;
-  padding: 0 12rpx;
-  border-radius: 999rpx;
-  font-size: 20rpx;
-}
-
-.section-head__meta--orange {
-  background: #fff3e7;
-  color: #ff9b52;
-}
-
-.special-grid,
 .base-grid {
   display: grid;
   gap: 14rpx 12rpx;
-}
-
-.special-grid {
-  grid-template-columns: repeat(2, 1fr);
 }
 
 .base-grid {
@@ -431,23 +307,17 @@ function getCountdownText(endAt: string, currentTime: number) {
   border: 2rpx solid #edf2fb;
 }
 
-.package-card--special {
-  min-height: 150rpx;
-}
-
 .package-card--selected {
   border-color: $primary;
   box-shadow: inset 0 0 0 2rpx rgba(21, 93, 252, 0.04);
 }
 
-.package-card__corner,
 .package-card__hot {
   position: absolute;
   right: 0;
   top: 0;
   padding: 6rpx 14rpx;
   border-radius: 0 24rpx 0 18rpx;
-  background: #ff7a00;
   font-size: 20rpx;
   color: #fff;
 }
@@ -489,13 +359,6 @@ function getCountdownText(endAt: string, currentTime: number) {
   font-size: 23px;
 }
 
-.package-card__origin {
-  font-size: 12px;
-  text-decoration: line-through;
-  color: $text-tertiary;
-}
-
-.package-card__stock,
 .package-card__unit {
   display: flex;
   align-items: center;
@@ -504,19 +367,6 @@ function getCountdownText(endAt: string, currentTime: number) {
   font-size: 12px;
   color: #8da6d8;
   line-height: 1;
-}
-
-.package-card__stock {
-  justify-content: flex-start;
-  padding: 6rpx 12rpx;
-  border-radius: 999rpx;
-  background: #f3f7ff;
-}
-
-.package-card__stock-icon {
-  margin-right: 8rpx;
-  font-size: 20rpx;
-  color: #8da6d8;
 }
 
 .option-card {
@@ -745,6 +595,17 @@ function getCountdownText(endAt: string, currentTime: number) {
   height: 16rpx;
   border-radius: 50%;
   background: #fff;
+}
+
+.package-empty {
+  display: flex;
+  justify-content: center;
+  padding: 48rpx 0;
+}
+
+.package-empty__text {
+  font-size: 26rpx;
+  color: $text-tertiary;
 }
 
 </style>

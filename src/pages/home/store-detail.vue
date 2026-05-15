@@ -63,7 +63,7 @@ const store = reactive<StoreDetail>({
 })
 
 const storeMap: Record<string, StoreDetail> = {
-  欢乐谷旗舰店: {
+  '1': {
     name: '欢乐谷旗舰店',
     region: '广东省 中山市 南区',
     address: '欢乐谷商业中心一楼 101 服务台',
@@ -76,7 +76,7 @@ const storeMap: Record<string, StoreDetail> = {
     recommendMachines: '星际战车、音速摩托、抓娃娃专区',
     recommendActivity: '会员双倍积分日、限时礼品兑换'
   },
-  额企鹅驱蚊器: {
+  '2': {
     name: '额企鹅驱蚊器',
     region: '广东省 中山市 石岐区',
     address: '兴中广场 2 号楼三层 302 号',
@@ -89,7 +89,7 @@ const storeMap: Record<string, StoreDetail> = {
     recommendMachines: '奇趣抓抓乐、甜梦熊屋、潮玩盲盒站',
     recommendActivity: '抓娃娃连胜挑战、周边限时兑换'
   },
-  大大大大: {
+  '3': {
     name: '大大大大',
     region: '广东省 中山市 东区',
     address: '远洋广场 B 馆二层 218 号',
@@ -105,8 +105,8 @@ const storeMap: Record<string, StoreDetail> = {
 }
 
 onLoad(query => {
-  const name = typeof query?.name === 'string' ? decodeURIComponent(query.name) : '欢乐谷旗舰店'
-  Object.assign(store, storeMap[name] || storeMap['欢乐谷旗舰店'])
+  const id = typeof query?.id === 'string' ? query.id : '1'
+  Object.assign(store, storeMap[id] || storeMap['1'])
 })
 
 function openNavigation() {

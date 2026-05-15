@@ -37,13 +37,20 @@
 
       <view class="profile-card">
         <view class="profile-card__head">
-          <view class="profile-card__avatar"></view>
+          <view class="profile-card__avatar" :style="{ backgroundImage: userStore.profile.avatar ? `url(${userStore.profile.avatar})` : '' }"></view>
           <view class="profile-card__meta">
             <text class="profile-card__name">{{ displayUser.nickname }}</text>
             <text class="profile-card__id">{{ displayUser.memberId }}</text>
           </view>
-          <view class="profile-card__scan" @click="handleProfileEntry">
-            {{ isGuest ? '登录' : pageData.user.scanLabel }}
+          <view class="profile-card__actions">
+            <view class="profile-card__action profile-card__action--outline" @click="handleScanEntry">
+              <TIcon name="scan" size="26rpx" color="#155dfc" />
+              <text>扫码</text>
+            </view>
+            <view class="profile-card__action profile-card__action--primary" @click="handleMemberCodeEntry">
+              <TIcon name="qrcode" size="26rpx" color="#ffffff" />
+              <text>会员码</text>
+            </view>
           </view>
         </view>
 
@@ -58,33 +65,6 @@
       </view>
 
       <view class="shortcut-card">
-        <view
-          class="shortcut-card__poster"
-          :class="{ 'shortcut-card__poster--guest': isGuest }"
-          @click="handleMemberQrClick"
-        >
-          <view v-if="!isGuest" class="shortcut-card__qr-box">
-            <TQRCode
-              class="shortcut-card__poster-code"
-              :size="136"
-              borderless
-              color="#1F2A3A"
-              bg-color="#FFFFFF"
-              :value="memberQrValue"
-            />
-            <view class="shortcut-card__refresh-tip">
-              <TIcon name="refresh" size="22rpx" color="#6b7c93" />
-              <text>{{ currentStore }} · {{ qrRefreshCountdown }}s 后自动刷新</text>
-            </view>
-          </view>
-          <view v-else class="shortcut-card__guest-box">
-            <t-button theme="primary" shape="round" size="small" @click="openLogin('member-code')">
-              立即登录
-            </t-button>
-          </view>
-        </view>
-        <view class="shortcut-card__divider"></view>
-
         <view class="shortcut-card__actions">
           <view
             v-for="action in actionItems"
@@ -104,9 +84,7 @@
       title="会员二维码"
       :value="memberQrValue"
       :tips="[`当前门店：${currentStore}`, `${qrRefreshCountdown}s 后自动刷新`]"
-      action-text="手动刷新"
       @update:visible="memberQrVisible = $event"
-      @action="refreshMemberQr"
     />
   </PageLayout>
 </template>
@@ -114,9 +92,7 @@
 <script setup lang="ts">
 import { computed, reactive, ref } from 'vue'
 import { onHide, onShow, onUnload } from '@dcloudio/uni-app'
-import TButton from 'tdesign-uniapp/button/button.vue'
 import TIcon from 'tdesign-uniapp/icon/icon.vue'
-import TQRCode from 'tdesign-uniapp/qrcode/qrcode.vue'
 import PageLayout from '@/components/common/layout/PageLayout.vue'
 import QrCodePopup from '@/components/common/popup/QrCodePopup.vue'
 import { getHomePageData, type HomePageData } from '@/services/home'
@@ -125,7 +101,6 @@ import { getAuthSceneForRoute, requireLoginForRoute } from '@/utils/auth'
 import type { AuthScene } from '@/services/auth'
 
 const STORE_KEY = 'rfkj_current_store'
-const defaultStore = '欢乐谷旗舰店'
 const appStore = useAppStore()
 const userStore = useUserStore()
 const qrRefreshCountdown = ref(60)
@@ -163,7 +138,7 @@ const actionItems = computed(() =>
   }))
 )
 const isGuest = computed(() => userStore.isGuest)
-const currentStore = computed(() => userStore.selectedStoreName || defaultStore)
+const currentStore = computed(() => userStore.selectedStoreName || '未注册门店')
 const barTop = computed(() => appStore.menuButtonTop)
 const barHeight = computed(() => appStore.menuButtonHeight)
 const menuButtonWidth = computed(() => appStore.menuButtonWidth)
@@ -222,12 +197,13 @@ const bannerList = computed(() =>
     }
   })
 )
-loadPageData()
+void loadPageData().catch(showError)
 onShow(() => {
-  const cachedStore = uni.getStorageSync(STORE_KEY) || defaultStore
-  if (!userStore.selectedStoreName && cachedStore) {
-    userStore.setSelectedStore({ name: cachedStore })
+  const cachedStore = uni.getStorageSync(STORE_KEY)
+  if (!userStore.selectedStoreName && userStore.selectedStoreId && cachedStore) {
+    userStore.setSelectedStore({ id: userStore.selectedStoreId, name: cachedStore })
   }
+  void loadPageData().catch(showError)
   startQrRefreshTimer()
 })
 onHide(() => {
@@ -266,16 +242,30 @@ function openUrl(url: string) {
 }
 
 function showStorePicker() {
+  if (isGuest.value) {
+    appStore.openAuthDialog('generic')
+    return
+  }
+
   uni.navigateTo({ url: '/pages/home/store-select' })
 }
 
-function handleProfileEntry() {
+function handleScanEntry() {
   if (isGuest.value) {
     appStore.openAuthDialog('generic')
     return
   }
 
   handleScan()
+}
+
+function handleMemberCodeEntry() {
+  if (isGuest.value) {
+    appStore.openAuthDialog('member-code')
+    return
+  }
+
+  memberQrVisible.value = true
 }
 
 function openLogin(scene: AuthScene) {
@@ -303,23 +293,6 @@ function handleScan() {
         icon: 'none'
       })
     }
-  })
-}
-
-function handleMemberQrClick() {
-  if (isGuest.value) {
-    return
-  }
-
-  memberQrVisible.value = true
-}
-
-function refreshMemberQr() {
-  qrRefreshSeed.value = Date.now()
-  qrRefreshCountdown.value = 60
-  uni.showToast({
-    title: '会员二维码已刷新',
-    icon: 'none'
   })
 }
 
@@ -393,6 +366,14 @@ function stopQrRefreshTimer() {
     clearInterval(qrRefreshTimer)
     qrRefreshTimer = undefined
   }
+}
+
+function showError(error: unknown) {
+  const message = error instanceof Error ? error.message : '首页数据加载失败'
+  uni.showToast({
+    title: message,
+    icon: 'none'
+  })
 }
 </script>
 
@@ -513,46 +494,76 @@ function stopQrRefreshTimer() {
 .profile-card__head {
   display: flex;
   align-items: center;
+  gap: 12rpx;
+  min-height: 82rpx;
 }
 
 .profile-card__avatar {
-  width: 94rpx;
-  height: 94rpx;
+  width: 82rpx;
+  height: 82rpx;
   border-radius: 50%;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-color: #eef4ff;
   @include public-cover($public-demo-image-2);
 }
 
 .profile-card__meta {
   flex: 1;
-  margin-left: 12rpx;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-width: 0;
 }
 
 .profile-card__name {
   display: block;
-  font-size: 32rpx;
+  font-size: 26rpx;
   font-weight: 700;
   color: $text-strong;
-  line-height: 1;
+  line-height: 1.2;
 }
 
 .profile-card__id {
   display: block;
-  margin-top: 14rpx;
+  margin-top: 10rpx;
   font-size: 24rpx;
   color: $text-tertiary;
   line-height: 1;
 }
 
-.profile-card__scan {
-  width: 94rpx;
-  height: 50rpx;
-  border: 2rpx solid #6badff;
-  border-radius: 8rpx;
+.profile-card__actions {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+}
+
+.profile-card__action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8rpx;
+  min-width: 94rpx;
+  height: 54rpx;
+  padding: 0 14rpx;
+  border-radius: 10rpx;
   text-align: center;
-  line-height: 46rpx;
-  font-size: 24rpx;
+  line-height: 50rpx;
+  font-size: 22rpx;
+  font-weight: 600;
+}
+
+.profile-card__action--outline {
+  border: 2rpx solid #6badff;
   color: $primary;
   background: transparent;
+}
+
+.profile-card__action--primary {
+  border: 2rpx solid $primary;
+  color: #fff;
+  background: $primary;
 }
 
 .profile-card__divider {
@@ -568,15 +579,9 @@ function stopQrRefreshTimer() {
 }
 
 .profile-card__stat {
-  min-width: 100rpx;
-}
-
-.profile-card__stat:nth-child(2) {
+  flex: 1;
+  position: relative;
   text-align: center;
-}
-
-.profile-card__stat:last-child {
-  text-align: right;
 }
 
 .profile-card__stat-label {
@@ -588,114 +593,51 @@ function stopQrRefreshTimer() {
 
 .profile-card__stat-value {
   display: block;
-  margin-top: 22rpx;
-  font-size: 32rpx;
+  margin-top: 20rpx;
+  font-size: 42rpx;
   font-weight: 700;
   color: $text-primary;
   line-height: 1;
 }
 
+.profile-card__stat + .profile-card__stat::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 8rpx;
+  width: 2rpx;
+  height: 72rpx;
+  background: $border-light;
+}
+
 .shortcut-card {
   margin: 0;
-  padding: 34rpx 34rpx 32rpx;
+  padding: 24rpx;
   background: $card-bg;
   border: 2rpx solid $border-light;
   border-radius: 28rpx;
 }
 
-.shortcut-card__poster {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 320rpx;
-  height: 320rpx;
-  margin: 0 auto;
-  border-radius: 24rpx;
-  background: transparent;
-}
-
-.shortcut-card__poster--guest {
-  background: linear-gradient(180deg, rgba(21, 93, 252, 0.08), rgba(21, 93, 252, 0.02)),
-    linear-gradient(180deg, #f5f8ff 0%, #e8eef8 100%);
-}
-
-.shortcut-card__qr-box {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-  height: 100%;
-  text-align: center;
-}
-
-.shortcut-card__poster-code {
-  flex: 0 0 auto;
-}
-
-:deep(.shortcut-card__poster-code .t-qrcode) {
-  padding: 0;
-  border: 0;
-  border-radius: 0;
-}
-
-.shortcut-card__refresh-tip {
-  display: inline-flex;
-  align-items: center;
-  gap: 6rpx;
-  margin-top: 14rpx;
-  font-size: 22rpx;
-  line-height: 1.4;
-  color: $text-secondary;
-}
-
-.shortcut-card__guest-box {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-  height: 100%;
-}
-
-.shortcut-card__divider {
-  height: 2rpx;
-  margin-top: 28rpx;
-  background: $border-light;
-}
-
 .shortcut-card__actions {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  margin-top: 22rpx;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16rpx;
 }
 
 .shortcut-card__item {
-  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 12rpx;
-  min-height: 116rpx;
+  gap: 14rpx;
+  min-height: 136rpx;
   justify-content: center;
-}
-
-.shortcut-card__item::after {
-  content: '';
-  position: absolute;
-  top: 6rpx;
-  right: 0;
-  width: 2rpx;
-  height: 80rpx;
-  background: $border-light;
-}
-
-.shortcut-card__item:last-child::after {
-  display: none;
+  border-radius: 20rpx;
+  background: #f6f8fc;
 }
 
 .shortcut-card__icon {
-  width: 44rpx;
-  height: 44rpx;
+  width: 48rpx;
+  height: 48rpx;
 }
 
 .shortcut-card__label {

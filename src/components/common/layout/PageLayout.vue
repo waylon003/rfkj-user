@@ -91,6 +91,7 @@ const headerHeight = computed(() => {
 .page-layout {
   min-height: 100vh;
   position: relative;
+  background: #f0f0f0;
 }
 
 .page-layout__fixed-header {

@@ -5,7 +5,7 @@
       <view class="my-hero__glow my-hero__glow--right"></view>
       <text class="my-title">我的</text>
       <view class="my-identity">
-        <view class="my-avatar"></view>
+        <view class="my-avatar" :style="{ backgroundImage: userStore.profile.avatar ? `url(${userStore.profile.avatar})` : '' }"></view>
         <view class="my-identity__copy">
           <text class="my-identity__name">{{ isGuest ? '登录会员后享受更多权益' : displayName }}</text>
           <text class="my-identity__id">
@@ -17,10 +17,9 @@
       <view class="my-quick-grid">
         <view class="my-quick-card" @click="handlePrimaryCardClick">
           <view class="my-quick-card__copy">
-            <text class="my-quick-card__title">{{ isGuest ? '立即登录' : '待领取礼品' }}</text>
-            <view v-if="isGuest" class="my-quick-card__subtitle">登录会员后享受更多权益</view>
-            <view v-else class="my-quick-card__meta">
-              <text class="my-quick-card__number">23</text>
+            <text class="my-quick-card__title">待领取礼品</text>
+            <view class="my-quick-card__meta">
+              <text class="my-quick-card__number">{{ isGuest ? '0' : pendingGiftCount }}</text>
               <text>件待领取</text>
             </view>
           </view>
@@ -28,10 +27,8 @@
         </view>
         <view class="my-quick-card" @click="handleSecondaryCardClick">
           <view class="my-quick-card__copy">
-            <text class="my-quick-card__title">{{ isGuest ? '选择门店' : '我的账单' }}</text>
-            <text class="my-quick-card__subtitle">
-              {{ isGuest ? '查看门店详情与门店导航' : '查看消费明细' }}
-            </text>
+            <text class="my-quick-card__title">我的账单</text>
+            <text class="my-quick-card__subtitle">查看消费明细</text>
           </view>
           <text class="my-quick-card__arrow">›</text>
         </view>
@@ -63,6 +60,7 @@
 
 <script setup lang="ts">
 import { computed, reactive } from 'vue'
+import { onShow } from '@dcloudio/uni-app'
 import PageLayout from '@/components/common/layout/PageLayout.vue'
 import { getProfileCenterData, type ProfileCenterData } from '@/services/profile'
 import { useAppStore, useUserStore } from '@/stores'
@@ -80,6 +78,9 @@ const pageData = reactive<ProfileCenterData>({
 })
 
 loadPageData()
+onShow(() => {
+  loadPageData()
+})
 
 async function loadPageData() {
   Object.assign(pageData, await getProfileCenterData())
@@ -89,34 +90,10 @@ const isGuest = computed(() => userStore.isGuest)
 const displayName = computed(() => userStore.profile.nickname || pageData.brandName)
 const displayMemberId = computed(() => userStore.profile.memberId || pageData.memberId)
 const displayLastLogin = computed(() => userStore.lastLoginTime || pageData.lastLogin)
-const visibleMenus = computed(() => {
-  if (!isGuest.value) {
-    return pageData.menus
-  }
-
-  return [
-    {
-      id: 'store',
-      title: '选择门店',
-      iconClass: 'icon-ic_mod_marketing',
-      route: '',
-      action: 'select-store' as PublicAction
-    },
-    {
-      id: 'feedback',
-      title: '帮助反馈',
-      iconClass: 'icon-ic_mem_gift_service',
-      route: '',
-      action: 'feedback' as PublicAction
-    },
-    {
-      id: 'service',
-      title: '客服电话',
-      iconClass: 'icon-ic_contact_tel',
-      route: '',
-      action: 'service' as PublicAction
-    }
-  ]
+const visibleMenus = computed(() => pageData.menus)
+const pendingGiftCount = computed(() => {
+  const summary = pageData.summaries.find(s => s.label === '礼品兑换')
+  return summary?.value || '0'
 })
 
 function navigate(url: string) {
@@ -125,7 +102,7 @@ function navigate(url: string) {
 
 function handlePrimaryCardClick() {
   if (isGuest.value) {
-    appStore.openAuthDialog('generic')
+    appStore.openAuthDialog('profile')
     return
   }
 
@@ -134,7 +111,7 @@ function handlePrimaryCardClick() {
 
 function handleSecondaryCardClick() {
   if (isGuest.value) {
-    handlePublicAction('select-store')
+    appStore.openAuthDialog('bill')
     return
   }
 
@@ -142,16 +119,14 @@ function handleSecondaryCardClick() {
 }
 
 function handleMenuClick(item: { id: string; route: string; action?: PublicAction }) {
-  if (isGuest.value) {
-    if (item.action) {
-      handlePublicAction(item.action)
-      return
-    }
-  }
-
   const scene = getAuthSceneForRoute(item.route)
   if (isGuest.value && scene) {
     requireLogin(scene, () => navigate(item.route))
+    return
+  }
+
+  if (isGuest.value && item.action) {
+    handlePublicAction(item.action)
     return
   }
 
@@ -221,6 +196,10 @@ function handleMenuClick(item: { id: string; route: string; action?: PublicActio
   flex: 0 0 auto;
   border: 4rpx solid #fff;
   border-radius: 50%;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-color: #eef4ff;
   @include public-cover($public-demo-image-2);
 }
 

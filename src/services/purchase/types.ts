@@ -36,39 +36,12 @@ export interface PurchaseCenterData {
   balanceLabel: string
   balanceValue: string
   balanceUnit: string
-  featuredEndAt: string
-  featuredPackages: PurchasePackage[]
   basePackages: PurchasePackage[]
   customAmount: PurchaseOptionRow
-  coupon: PurchaseOptionRow
   ticketDeduction: PurchaseOptionRow
   pointPayment: PurchaseOptionRow
   summary: PurchaseSummary
   paymentSheet: PaymentSheetData
-}
-
-export interface CouponSelectSection {
-  title: string
-  countLabel: string
-  accent: 'blue' | 'orange'
-}
-
-export interface CouponSelectItem {
-  id: string
-  amount: string
-  title: string
-  condition: string
-  expiry: string
-  recommended?: boolean
-  selected?: boolean
-  disabled?: boolean
-}
-
-export interface CouponSelectData {
-  availableSection: CouponSelectSection
-  unavailableSection: CouponSelectSection
-  available: CouponSelectItem[]
-  unavailable: CouponSelectItem[]
 }
 
 export interface TicketDeductionOption {

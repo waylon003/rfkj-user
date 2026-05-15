@@ -8,6 +8,13 @@ export interface PointGiftItem {
   title: string
   cost: string
   category: string
+  image?: string
+  stock: number
+  barcodeId?: number
+  storeId?: number
+  stockId?: number
+  stateMode?: 'available' | 'insufficient' | 'soldout'
+  shortfallText?: string
 }
 
 export interface PointGiftPageData {
@@ -22,4 +29,20 @@ export interface PointGiftConfirmData {
   requiredPoints: string
   availablePoints: string
   hint: string[]
+}
+
+export interface SubmitPointGiftPayload {
+  userUid: string
+  barcodeId: number
+  storeId: number
+  stockId: number
+  number: number
+}
+
+export interface SubmitPointGiftResult {
+  success: boolean
+  integral?: number
+  coin?: number
+  ticket?: number
+  message?: string
 }

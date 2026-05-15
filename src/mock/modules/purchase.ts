@@ -1,5 +1,4 @@
 import type {
-  CouponSelectData,
   CustomAmountData,
   PaymentMethodOption,
   PurchaseCenterData,
@@ -11,26 +10,7 @@ import type {
   TicketDeductionData
 } from '@/services/purchase/types'
 
-type PurchaseMode = 'featured' | 'base' | 'custom'
-
-const featuredPackageSeeds: ReadonlyArray<Omit<PurchasePackage, 'selected'>> = [
-  {
-    id: 'featured-200-a',
-    coinText: '200 游戏币',
-    price: 168,
-    originalPrice: 198,
-    stockText: '剩余库存：1000',
-    badgeText: '限购'
-  },
-  {
-    id: 'featured-200-b',
-    coinText: '200 游戏币',
-    price: 168,
-    originalPrice: 198,
-    stockText: '剩余库存：1000',
-    badgeText: '限购'
-  }
-]
+type PurchaseMode = 'base' | 'custom'
 
 const basePackageSeeds: ReadonlyArray<Omit<PurchasePackage, 'selected'>> = [
   {
@@ -60,42 +40,6 @@ const basePackageSeeds: ReadonlyArray<Omit<PurchasePackage, 'selected'>> = [
   }
 ]
 
-const couponAvailableSeeds = [
-  {
-    id: 'coupon-1',
-    amount: '10',
-    title: '充值游戏币优惠卷',
-    condition: '满¥100可用',
-    expiry: '2025.12.31',
-    recommended: true
-  },
-  {
-    id: 'coupon-2',
-    amount: '10',
-    title: '充值游戏币优惠卷',
-    condition: '满¥100可用',
-    expiry: '2025.12.31'
-  },
-  {
-    id: 'coupon-3',
-    amount: '10',
-    title: '充值游戏币优惠卷',
-    condition: '满¥100可用',
-    expiry: '2025.12.31'
-  }
-]
-
-const couponUnavailableSeeds = [
-  {
-    id: 'coupon-4',
-    amount: '10',
-    title: '充值游戏币优惠卷',
-    condition: '满¥100可用',
-    expiry: '2025.12.31',
-    disabled: true
-  }
-]
-
 const ticketDeductionSeeds: ReadonlyArray<TicketDeductionOption & { discount: number }> = [
   { id: 'none', title: '暂不用彩票抵扣', discount: 0 },
   { id: 'full-85', title: '抵扣全额¥8.5元', subtitle: '使用850张彩票', discount: 8.5 },
@@ -111,10 +55,8 @@ const pointPaymentSeeds: ReadonlyArray<TicketDeductionOption & { discount: numbe
 
 const purchaseState = {
   activeMode: 'base' as PurchaseMode,
-  selectedFeaturedId: 'featured-200-a',
   selectedBaseId: 'pkg-50',
   customAmount: '100',
-  selectedCouponId: '',
   selectedTicketDeductionId: 'none',
   selectedPointPaymentId: 'minus-5'
 }
@@ -131,7 +73,6 @@ export function getCustomAmountData(): CustomAmountData {
 export function getPurchaseCenterData(): PurchaseCenterData {
   const activePackage = getActivePackage()
   const payable = getPayable()
-  const selectedCoupon = couponAvailableSeeds.find(item => item.id === purchaseState.selectedCouponId)
   const selectedTicket = ticketDeductionSeeds.find(item => item.id === purchaseState.selectedTicketDeductionId)
   const selectedPoint = pointPaymentSeeds.find(item => item.id === purchaseState.selectedPointPaymentId)
   const paymentSheet: PaymentSheetData = buildPaymentSheet(activePackage, payable)
@@ -140,11 +81,6 @@ export function getPurchaseCenterData(): PurchaseCenterData {
     balanceLabel: '当前游戏币余额',
     balanceValue: '1,250',
     balanceUnit: '枚',
-    featuredEndAt: '2026-04-30T12:30:20+08:00',
-    featuredPackages: featuredPackageSeeds.map(item => ({
-      ...item,
-      selected: purchaseState.activeMode === 'featured' && item.id === purchaseState.selectedFeaturedId
-    })),
     basePackages: basePackageSeeds.map(item => ({
       ...item,
       selected: purchaseState.activeMode === 'base' && item.id === purchaseState.selectedBaseId
@@ -155,14 +91,6 @@ export function getPurchaseCenterData(): PurchaseCenterData {
       valueText: purchaseState.activeMode === 'custom' ? `${purchaseState.customAmount}枚` : '输入游戏币',
       route: '/pages/coin/custom-amount',
       selected: purchaseState.activeMode === 'custom'
-    },
-    coupon: {
-      id: 'coupon',
-      iconClass: 'icon-ic_mod_marketing',
-      label: '优惠卷',
-      valueText: selectedCoupon ? `-¥${selectedCoupon.amount}.00` : '共有一张优惠卷可以用',
-      route: '/pages/coupon/select',
-      selected: Boolean(selectedCoupon)
     },
     ticketDeduction: {
       id: 'ticket-deduction',
@@ -188,12 +116,6 @@ export function getPurchaseCenterData(): PurchaseCenterData {
     },
     paymentSheet
   }
-}
-
-export function selectFeaturedPackage(id: string): PurchaseCenterData {
-  purchaseState.selectedFeaturedId = id
-  purchaseState.activeMode = 'featured'
-  return getPurchaseCenterData()
 }
 
 export function selectBasePackage(id: string): PurchaseCenterData {
@@ -222,35 +144,6 @@ export function confirmCustomAmount(): PurchaseCenterData {
     purchaseState.customAmount = '1'
   }
   purchaseState.activeMode = 'custom'
-  return getPurchaseCenterData()
-}
-
-export function getCouponSelectData(): CouponSelectData {
-  return {
-    availableSection: {
-      title: '可用优惠卷',
-      countLabel: '展开 (3张)',
-      accent: 'blue'
-    },
-    unavailableSection: {
-      title: '不可用优惠卷',
-      countLabel: '展开 (1张)',
-      accent: 'orange'
-    },
-    available: couponAvailableSeeds.map(item => ({
-      ...item,
-      selected: item.id === purchaseState.selectedCouponId
-    })),
-    unavailable: couponUnavailableSeeds.map(item => ({ ...item }))
-  }
-}
-
-export function selectCoupon(id: string): CouponSelectData {
-  purchaseState.selectedCouponId = id
-  return getCouponSelectData()
-}
-
-export function confirmCouponSelection(): PurchaseCenterData {
   return getPurchaseCenterData()
 }
 
@@ -311,10 +204,6 @@ export function confirmPointPayment(): PurchaseCenterData {
 }
 
 function getActivePackage() {
-  if (purchaseState.activeMode === 'featured') {
-    return featuredPackageSeeds.find(item => item.id === purchaseState.selectedFeaturedId) || featuredPackageSeeds[0]
-  }
-
   if (purchaseState.activeMode === 'custom') {
     return {
       id: 'custom',
@@ -333,10 +222,9 @@ function getCustomAmountPrice() {
 
 function getPayable() {
   const packagePrice = getActivePackage().price
-  const couponDiscount = Number(couponAvailableSeeds.find(item => item.id === purchaseState.selectedCouponId)?.amount || 0)
   const ticketDiscount = ticketDeductionSeeds.find(item => item.id === purchaseState.selectedTicketDeductionId)?.discount || 0
   const pointDiscount = pointPaymentSeeds.find(item => item.id === purchaseState.selectedPointPaymentId)?.discount || 0
-  return Math.max(packagePrice - couponDiscount - ticketDiscount - pointDiscount, 0)
+  return Math.max(packagePrice - ticketDiscount - pointDiscount, 0)
 }
 
 function buildPaymentSheet(activePackage: { coinText: string; price: number; unitPriceText?: string }, payable: number): PaymentSheetData {

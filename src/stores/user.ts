@@ -2,8 +2,10 @@ import { defineStore } from 'pinia'
 import type { AuthUserProfile, LoginType, UserMode } from '@/services/auth'
 
 const STORAGE_KEY = 'rfkj-user-session'
+const DEFAULT_STORE_ID = 15
 
 export interface UserProfile {
+  uid: string
   nickname: string
   memberId: string
   avatar: string
@@ -18,6 +20,7 @@ export interface UserProfile {
 }
 
 const defaultProfile: UserProfile = {
+  uid: '',
   nickname: '游客',
   memberId: '',
   avatar: '',
@@ -33,6 +36,7 @@ const defaultProfile: UserProfile = {
 
 function toUserProfile(profile?: Partial<AuthUserProfile>): UserProfile {
   return {
+    uid: profile?.uid || defaultProfile.uid,
     nickname: profile?.nickname || defaultProfile.nickname,
     memberId: profile?.memberId || defaultProfile.memberId,
     avatar: profile?.avatar || defaultProfile.avatar,
@@ -53,14 +57,16 @@ export const useUserStore = defineStore('user', {
     loginType: null as LoginType,
     sessionId: '',
     selectedStoreId: null as number | null,
-    selectedStoreName: '欢乐谷旗舰店',
+    selectedStoreName: '',
     isProfileCompleted: false,
     lastLoginTime: '',
-    profile: { ...defaultProfile }
+    profile: { ...defaultProfile },
+    qrcodeStoreId: null as number | null
   }),
   getters: {
     isLoggedIn: state => state.mode === 'member' && !!state.sessionId,
-    isGuest: state => state.mode === 'guest'
+    isGuest: state => state.mode === 'guest',
+    effectiveStoreId: state => state.qrcodeStoreId ?? DEFAULT_STORE_ID
   },
   actions: {
     init() {
@@ -74,13 +80,21 @@ export const useUserStore = defineStore('user', {
       this.loginType = cached.loginType || null
       this.sessionId = cached.sessionId || ''
       this.selectedStoreId = cached.selectedStoreId ?? null
-      this.selectedStoreName = cached.selectedStoreName || '欢乐谷旗舰店'
+      this.selectedStoreName = cached.selectedStoreName || ''
       this.isProfileCompleted = !!cached.isProfileCompleted
       this.lastLoginTime = cached.lastLoginTime || (cached.mode === 'member' ? formatDateTime(new Date()) : '')
       this.profile = {
         ...defaultProfile,
         ...(cached.profile || {})
       }
+      // 注意：qrcodeStoreId 不从缓存恢复，只在 App.vue onLaunch 中根据当前入口设置
+      // 如果不是通过二维码进入，应该使用默认值 15
+      const oldQrcodeStoreId = this.qrcodeStoreId
+      this.qrcodeStoreId = null
+      console.log('[userStore.init] qrcodeStoreId 重置为 null', {
+        oldQrcodeStoreId,
+        cached: cached.qrcodeStoreId
+      })
       this.persist()
     },
     persist() {
@@ -92,16 +106,23 @@ export const useUserStore = defineStore('user', {
         selectedStoreName: this.selectedStoreName,
         isProfileCompleted: this.isProfileCompleted,
         lastLoginTime: this.lastLoginTime,
-        profile: this.profile
+        profile: this.profile,
+        qrcodeStoreId: this.qrcodeStoreId
       })
     },
     enterGuest() {
       this.mode = 'guest'
       this.loginType = null
       this.sessionId = ''
+      this.selectedStoreId = null
+      this.selectedStoreName = ''
       this.isProfileCompleted = false
       this.lastLoginTime = ''
       this.profile = { ...defaultProfile }
+      this.persist()
+    },
+    setQrcodeStoreId(storeId: number | null) {
+      this.qrcodeStoreId = storeId
       this.persist()
     },
     login(payload: {
@@ -114,6 +135,8 @@ export const useUserStore = defineStore('user', {
       this.loginType = payload.loginType
       this.sessionId = payload.sessionId
       this.profile = toUserProfile(payload.userInfo)
+      this.selectedStoreName =
+        this.selectedStoreId === payload.userInfo.storeId ? this.selectedStoreName : ''
       this.selectedStoreId = payload.userInfo.storeId ?? null
       this.isProfileCompleted = payload.isProfileCompleted ?? true
       this.lastLoginTime = formatDateTime(new Date())

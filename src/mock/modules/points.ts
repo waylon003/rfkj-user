@@ -11,12 +11,59 @@ export function getPointGiftPageData(): PointGiftPageData {
       { label: '生活好物', value: 'life' }
     ],
     items: [
-      { id: 'gift-1', title: '机器猫毛绒公仔', cost: '500', category: 'plush' },
-      { id: 'gift-2', title: '蓝牙耳机', cost: '1800', category: 'digital' },
-      { id: 'gift-3', title: '主题帆布包', cost: '900', category: 'fashion' },
-      { id: 'gift-4', title: '便携水杯', cost: '650', category: 'life' },
-      { id: 'gift-5', title: '限定盲盒公仔', cost: '1200', category: 'plush' },
-      { id: 'gift-6', title: '手机支架', cost: '300', category: 'digital' }
+      {
+        id: 'gift-1',
+        title: '机器猫毛绒公仔',
+        cost: '500',
+        category: 'plush',
+        image: '/static/demo-page/reward-plush.svg',
+        stock: 12,
+        stateMode: 'available'
+      },
+      {
+        id: 'gift-2',
+        title: '蓝牙耳机',
+        cost: '5100',
+        category: 'digital',
+        image: '/static/demo-page/reward-placeholder.svg',
+        stock: 12,
+        stateMode: 'insufficient',
+        shortfallText: '还差3,850积分'
+      },
+      {
+        id: 'gift-3',
+        title: '主题帆布包',
+        cost: '900',
+        category: 'fashion',
+        image: '/static/demo-page/reward-placeholder.svg',
+        stock: 0,
+        stateMode: 'soldout'
+      },
+      {
+        id: 'gift-4',
+        title: '便携水杯',
+        cost: '650',
+        category: 'life',
+        image: '/static/demo-page/reward-placeholder.svg',
+        stock: 8
+      },
+      {
+        id: 'gift-5',
+        title: '限定盲盒公仔',
+        cost: '1200',
+        category: 'plush',
+        image: '/static/demo-page/reward-plush.svg',
+        stock: 3
+      },
+      {
+        id: 'gift-6',
+        title: '手机支架',
+        cost: '300',
+        category: 'digital',
+        image: '/static/demo-page/reward-placeholder.svg',
+        stock: 0,
+        stateMode: 'soldout'
+      }
     ]
   }
 }
@@ -27,6 +74,6 @@ export function getPointGiftConfirmData(): PointGiftConfirmData {
     giftName: '经典机器猫毛绒公仔',
     requiredPoints: '100',
     availablePoints: '999',
-    hint: ['兑换后请前往“待取礼品”查看核销码。兑换一且', '成功，积分将不予退回。']
+    hint: ['兑换后请前往“待取礼品”查看核销码。', '兑换成功后，积分将不予退回。']
   }
 }

@@ -1,5 +1,5 @@
 <template>
-  <view class="profile-hero" :class="{ 'profile-hero--tall': tall }">
+  <view class="profile-hero" :class="{ 'profile-hero--tall': tall, 'profile-hero--overflow-visible': overflowVisible }">
     <view class="profile-hero__orb profile-hero__orb--left"></view>
     <view class="profile-hero__orb profile-hero__orb--right"></view>
     <text v-if="back" class="profile-hero__back" @click="goBack">‹</text>
@@ -15,11 +15,13 @@ withDefaults(
     title?: string
     back?: boolean
     tall?: boolean
+    overflowVisible?: boolean
   }>(),
   {
     title: '',
     back: false,
-    tall: false
+    tall: false,
+    overflowVisible: false
   }
 )
 
@@ -31,7 +33,7 @@ function goBack() {
 }
 </script>
 
-<style scoped lang="scss">
+<style lang="scss">
 @import '@/styles/variables.scss';
 
 .profile-hero {
@@ -44,6 +46,10 @@ function goBack() {
 .profile-hero--tall {
   height: 940rpx;
   background: linear-gradient(180deg, $primary-dark 0%, $primary-light 100%);
+}
+
+.profile-hero--overflow-visible {
+  overflow: visible !important;
 }
 
 .profile-hero__orb {

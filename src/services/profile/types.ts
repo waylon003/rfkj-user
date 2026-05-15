@@ -44,6 +44,7 @@ export interface GiftRecordItem {
   amount: string
   time: string
   method: string
+  statusType?: 'received' | 'pending' | 'returned'
   statusText?: string
   actionText?: string
   qrValue?: string
@@ -62,6 +63,8 @@ export interface PendingGiftItem {
   timeLabel: string
   actionLabel: string
   tab: PendingGiftTab
+  image?: string
+  pickupAddress?: string
   qrValue?: string
 }
 

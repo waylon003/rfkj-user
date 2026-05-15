@@ -1,157 +1,121 @@
 <template>
-  <PageLayout class="store-select-page" title="选择门店" :back="true" :fixed-header-height="112">
-    <template #fixed-header>
-      <view class="store-select-page__search-wrap">
-        <t-search
-          v-model:value="keyword"
-          placeholder="搜索门店名称 / 地区 / 地址 / 电话"
-          shape="round"
-          :center="false"
-          :clearable="true"
-        />
-      </view>
-    </template>
-
+  <PageLayout class="store-select-page" title="选择门店" :back="true">
     <view class="store-select-page__content">
-      <view
-        v-for="store in visibleStores"
-        :key="store.name"
-        class="store-card"
-        :class="{ 'store-card--active': store.name === selectedStore }"
-        @click="selectStore(store.name)"
-      >
-        <TImage
-          class="store-card__cover"
-          :src="store.cover"
-          width="176rpx"
-          height="176rpx"
-          mode="aspectFill"
-          shape="round"
-        />
+      <template v-if="stores.length > 0">
+        <view
+          v-for="store in stores"
+          :key="store.id"
+          class="store-card"
+          :class="{ 'store-card--active': store.id === selectedStoreId }"
+          @click="selectStore(store)"
+        >
+          <TImage
+            class="store-card__cover"
+            :src="store.cover"
+            width="176rpx"
+            height="176rpx"
+            mode="aspectFill"
+            shape="round"
+          />
 
-        <view class="store-card__main">
-          <view class="store-card__title-row">
-            <text class="store-card__name">{{ store.name }}</text>
-            <view v-if="store.name === selectedStore" class="store-card__check">
-              <TIcon name="check" size="28rpx" color="#ffffff" />
+          <view class="store-card__main">
+            <view class="store-card__title-row">
+              <text class="store-card__name">{{ store.name }}</text>
+              <view v-if="store.id === selectedStoreId" class="store-card__check">
+                <TIcon name="check" size="28rpx" color="#ffffff" />
+              </view>
+            </view>
+
+            <view v-if="store.distanceText" class="store-card__distance">
+              <TIcon name="location" size="24rpx" color="#155dfc" />
+              <text>距我{{ store.distanceText }}</text>
+            </view>
+
+            <view class="store-card__line">
+              <TIcon name="map-location" size="28rpx" color="#6b7c93" />
+              <text>{{ store.address }}</text>
+            </view>
+            <view class="store-card__line">
+              <TIcon name="call" size="28rpx" color="#6b7c93" />
+              <text>{{ store.phone }}</text>
+            </view>
+
+            <view class="store-card__actions">
+              <t-button
+                size="small"
+                variant="base"
+                shape="round"
+                theme="primary"
+                @click.stop="viewStoreDetail(store)"
+              >
+                门店详情
+              </t-button>
+              <t-button
+                size="small"
+                variant="base"
+                shape="round"
+                theme="primary"
+                @click.stop="openStoreNavigation(store)"
+              >
+                门店导航
+              </t-button>
             </view>
           </view>
-
-          <view class="store-card__line">
-            <TIcon name="location" size="28rpx" color="#6b7c93" />
-            <text>{{ store.region }}</text>
-          </view>
-          <view class="store-card__line">
-            <TIcon name="map-location" size="28rpx" color="#6b7c93" />
-            <text>{{ store.address }}</text>
-          </view>
-          <view class="store-card__line">
-            <TIcon name="call" size="28rpx" color="#6b7c93" />
-            <text>{{ store.phone }}</text>
-          </view>
-
-          <view class="store-card__actions">
-            <t-button
-              size="small"
-              variant="base"
-              shape="round"
-              theme="primary"
-              @click.stop="viewStoreDetail(store)"
-            >
-              门店详情
-            </t-button>
-            <t-button
-              size="small"
-              variant="base"
-              shape="round"
-              theme="primary"
-              @click.stop="openStoreNavigation(store)"
-            >
-              门店导航
-            </t-button>
-          </view>
         </view>
+      </template>
+
+      <view v-else-if="!loading" class="store-select-page__empty">
+        <TIcon name="scan" size="96rpx" color="#c0cddf" />
+        <text class="store-select-page__empty-title">暂未注册门店会员</text>
+        <text class="store-select-page__empty-desc">扫描门店二维码，注册成为门店会员后即可选择门店</text>
+        <t-button
+          theme="primary"
+          shape="round"
+          size="medium"
+          @click="handleScanRegister"
+        >
+          扫码注册门店会员
+        </t-button>
       </view>
     </view>
   </PageLayout>
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { ref } from 'vue'
 import { onShow } from '@dcloudio/uni-app'
 import TButton from 'tdesign-uniapp/button/button.vue'
 import TIcon from 'tdesign-uniapp/icon/icon.vue'
 import TImage from 'tdesign-uniapp/image/image.vue'
-import TSearch from 'tdesign-uniapp/search/search.vue'
 import PageLayout from '@/components/common/layout/PageLayout.vue'
 import { useUserStore } from '@/stores'
+import { getRegisteredStoreList, type RegisteredStore } from '@/services/store'
 
 const STORE_KEY = 'rfkj_current_store'
-const defaultStore = '欢乐谷旗舰店'
 const userStore = useUserStore()
-const selectedStore = ref(defaultStore)
-const keyword = ref('')
-type StoreItem = {
-  name: string
-  region: string
-  address: string
-  phone: string
-  cover: string
-  latitude: number
-  longitude: number
-}
+const selectedStoreId = ref<number | null>(null)
+const stores = ref<RegisteredStore[]>([])
+const loading = ref(true)
 
-const stores = [
-  {
-    name: '欢乐谷旗舰店',
-    region: '广东省 中山市 南区',
-    address: '欢乐谷商业中心一楼 101 服务台',
-    phone: '0760-8888 0001',
-    cover: '/static/demo-page/activity-rollercoaster.png',
-    latitude: 22.5176,
-    longitude: 113.3928
-  },
-  {
-    name: '额企鹅驱蚊器',
-    region: '广东省 中山市 石岐区',
-    address: '兴中广场 2 号楼三层 302 号',
-    phone: '0760-8888 0002',
-    cover: '/static/demo-page/activity-rollercoaster.png',
-    latitude: 22.5312,
-    longitude: 113.3839
-  },
-  {
-    name: '大大大大',
-    region: '广东省 中山市 东区',
-    address: '远洋广场 B 馆二层 218 号',
-    phone: '0760-8888 0003',
-    cover: '/static/demo-page/activity-rollercoaster.png',
-    latitude: 22.5287,
-    longitude: 113.4232
+onShow(async () => {
+  selectedStoreId.value = userStore.selectedStoreId
+  loading.value = true
+  try {
+    const result = await getRegisteredStoreList()
+    stores.value = result.stores
+  } catch {
+    stores.value = []
+  } finally {
+    loading.value = false
   }
-]
-
-const visibleStores = computed(() => {
-  const value = keyword.value.trim()
-  if (!value) {
-    return stores
-  }
-
-  return stores.filter(store =>
-    [store.name, store.region, store.address, store.phone].some(field => field.includes(value))
-  )
 })
 
-onShow(() => {
-  selectedStore.value = userStore.selectedStoreName || uni.getStorageSync(STORE_KEY) || defaultStore
-})
-
-function selectStore(name: string) {
-  selectedStore.value = name
-  uni.setStorageSync(STORE_KEY, name)
-  userStore.setSelectedStore({ name })
+function selectStore(store: RegisteredStore) {
+  selectedStoreId.value = store.id
+  uni.setStorageSync(STORE_KEY, store.name)
+  userStore.setSelectedStore({ id: store.id, name: store.name })
   uni.showToast({
-    title: `已切换到 ${name}`,
+    title: `已切换到 ${store.name}`,
     icon: 'none'
   })
   setTimeout(() => {
@@ -159,11 +123,11 @@ function selectStore(name: string) {
   }, 300)
 }
 
-function viewStoreDetail(store: StoreItem) {
-  uni.navigateTo({ url: `/pages/home/store-detail?name=${encodeURIComponent(store.name)}` })
+function viewStoreDetail(store: RegisteredStore) {
+  uni.navigateTo({ url: `/pages/home/store-detail?id=${store.id}` })
 }
 
-function openStoreNavigation(store: StoreItem) {
+function openStoreNavigation(store: RegisteredStore) {
   uni.openLocation({
     latitude: store.latitude,
     longitude: store.longitude,
@@ -177,6 +141,25 @@ function openStoreNavigation(store: StoreItem) {
     }
   })
 }
+
+function handleScanRegister() {
+  uni.scanCode({
+    onlyFromCamera: false,
+    scanType: ['qrCode'],
+    success() {
+      uni.showToast({
+        title: '扫码成功，正在注册门店会员',
+        icon: 'none'
+      })
+    },
+    fail() {
+      uni.showToast({
+        title: '已取消扫码',
+        icon: 'none'
+      })
+    }
+  })
+}
 </script>
 
 <style scoped lang="scss">
@@ -185,17 +168,6 @@ function openStoreNavigation(store: StoreItem) {
 .store-select-page {
   min-height: 100vh;
   background: $page-bg;
-}
-
-.store-select-page__search-wrap {
-  padding: 16rpx 24rpx;
-  background: #fff;
-}
-
-.store-select-page__search-wrap :deep(.t-search) {
-  --td-search-height: 80rpx;
-  --td-search-bg-color: #f3f6fb;
-  --td-search-placeholder-color: #9aa8bc;
 }
 
 .store-select-page__content {
@@ -257,6 +229,16 @@ function openStoreNavigation(store: StoreItem) {
   color: $primary;
 }
 
+.store-card__distance {
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+  margin-top: 12rpx;
+  font-size: 24rpx;
+  color: $primary;
+  line-height: 34rpx;
+}
+
 .store-card__line {
   display: flex;
   align-items: flex-start;
@@ -306,5 +288,34 @@ function openStoreNavigation(store: StoreItem) {
   height: 44rpx;
   border-radius: 50%;
   background: $primary;
+}
+
+.store-select-page__empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 120rpx 48rpx;
+  text-align: center;
+}
+
+.store-select-page__empty-title {
+  display: block;
+  margin-top: 32rpx;
+  font-size: 30rpx;
+  font-weight: 600;
+  color: $text-strong;
+}
+
+.store-select-page__empty-desc {
+  display: block;
+  margin-top: 16rpx;
+  font-size: 26rpx;
+  color: $text-tertiary;
+  line-height: 1.6;
+}
+
+.store-select-page__empty :deep(.t-button) {
+  margin-top: 40rpx;
 }
 </style>

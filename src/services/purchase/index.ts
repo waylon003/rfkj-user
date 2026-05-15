@@ -1,6 +1,6 @@
 import { withModuleMock } from '@/mock'
+import { fetchCoinSalesRequest } from './api'
 import type {
-  CouponSelectData,
   CustomAmountData,
   PurchaseCenterData,
   PaymentSheetData,
@@ -30,45 +30,35 @@ export function confirmCustomAmount() {
   )
 }
 
-export function getPurchaseCenterData() {
-  return withModuleMock<'purchase', PurchaseCenterData>(
+export async function getPurchaseCenterData(): Promise<PurchaseCenterData> {
+  const mockData = await withModuleMock<'purchase', PurchaseCenterData>(
     'purchase',
     module => module.getPurchaseCenterData()
   )
-}
 
-export function selectFeaturedPackage(id: string) {
-  return withModuleMock<'purchase', PurchaseCenterData>(
-    'purchase',
-    module => module.selectFeaturedPackage(id)
-  )
+  // Replace basePackages with real coin sales data (only when logged in)
+  const cached = uni.getStorageSync('rfkj-user-session')
+  if (cached?.sessionId) {
+    try {
+      const realPackages = await fetchCoinSalesRequest()
+      if (realPackages.length > 0) {
+        mockData.basePackages = realPackages.map((pkg, index) => ({
+          ...pkg,
+          selected: index === 0
+        }))
+      }
+    } catch {
+      // If API fails, keep mock basePackages
+    }
+  }
+
+  return mockData
 }
 
 export function selectBasePackage(id: string) {
   return withModuleMock<'purchase', PurchaseCenterData>(
     'purchase',
     module => module.selectBasePackage(id)
-  )
-}
-
-export function getCouponSelectData() {
-  return withModuleMock<'purchase', CouponSelectData>(
-    'purchase',
-    module => module.getCouponSelectData()
-  )
-}
-
-export function selectCoupon(id: string) {
-  return withModuleMock<'purchase', CouponSelectData>(
-    'purchase',
-    module => module.selectCoupon(id)
-  )
-}
-
-export function confirmCouponSelection() {
-  return withModuleMock<'purchase', PurchaseCenterData>(
-    'purchase',
-    module => module.confirmCouponSelection()
   )
 }
 
@@ -129,9 +119,6 @@ export function confirmPointPayment() {
 }
 
 export type {
-  CouponSelectData,
-  CouponSelectItem,
-  CouponSelectSection,
   PurchaseCenterData,
   PurchaseOptionRow,
   PurchasePackage,

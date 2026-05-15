@@ -48,6 +48,8 @@ export async function loginWithWechatCodeRequest(code: string): Promise<AuthLogi
   }
 }
 
+const DEFAULT_STORE_ID = 15
+
 export async function getWechatPhoneNumberRequest(code: string, storeId: number | null, sessionId?: string): Promise<AuthUserProfile> {
   const header = sessionId
     ? {
@@ -55,8 +57,10 @@ export async function getWechatPhoneNumberRequest(code: string, storeId: number 
       }
     : undefined
 
+  const effectiveStoreId = storeId ?? DEFAULT_STORE_ID
+
   const result = await request<ApiEnvelope<WechatLoginRawUserInfo>>({
-    url: `${APP_CONFIG.authBaseUrl}/wechat/member/GetUserPhoneNumber?code=${encodeURIComponent(code)}&storeId=${storeId || 0}`,
+    url: `${APP_CONFIG.authBaseUrl}/wechat/member/GetUserPhoneNumber?code=${encodeURIComponent(code)}&storeId=${effectiveStoreId}`,
     method: 'GET',
     header
   })

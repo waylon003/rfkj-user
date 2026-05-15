@@ -11,8 +11,7 @@ export function getProfileCenterData(): ProfileCenterData {
     brandName: '如风科技',
     memberId: 'ID:123213213',
     summaries: [
-      { label: '礼品兑换', value: '1', accent: 'orange', route: '/pages/profile/gifts' },
-      { label: '优惠卷', value: '10', route: '/pages/coupon/select' },
+      { label: '礼品兑换', value: '0', accent: 'orange', route: '/pages/profile/gifts' },
       { label: '我的账单', value: '¥', accent: 'dark', route: '/pages/profile/bill' }
     ],
     menus: [
@@ -87,6 +86,7 @@ export function getGiftRecordData(): GiftRecordData {
         amount: '-100',
         time: '2026.02.03 10:02',
         method: '微信扫码 / 朋友赠送',
+        statusType: 'received',
         statusText: '好友“张三”已领取'
       },
       {
@@ -96,6 +96,7 @@ export function getGiftRecordData(): GiftRecordData {
         amount: '-100',
         time: '2026.02.03 10:02',
         method: '微信扫码 / 朋友赠送',
+        statusType: 'received',
         statusText: '好友“张三”已领取',
         actionText: '查看二维码',
         qrValue: 'https://rfkj.example.com/gift/redeem?scene=record&amount=100&recordId=record-3'
@@ -107,6 +108,7 @@ export function getGiftRecordData(): GiftRecordData {
         amount: '-100',
         time: '2026.02.03 10:02',
         method: '微信扫码 / 朋友赠送',
+        statusType: 'pending',
         statusText: '链接未点击',
         actionText: '重发链接'
       },
@@ -117,6 +119,7 @@ export function getGiftRecordData(): GiftRecordData {
         amount: '-100',
         time: '2026.02.03 10:02',
         method: '微信扫码 / 朋友赠送',
+        statusType: 'returned',
         statusText: '超过24小时未领，额度已退回'
       }
     ]
@@ -137,6 +140,8 @@ export function getPendingGiftData(): PendingGiftData {
         timeLabel: '有效期至: 2026.1.31',
         actionLabel: '核销码',
         tab: 'pending',
+        image: '/static/demo-page/reward-plush.svg',
+        pickupAddress: '欢乐谷旗舰店一楼服务台',
         qrValue: 'https://rfkj.example.com/gift/pickup?giftId=gift-1'
       },
       {
@@ -144,14 +149,18 @@ export function getPendingGiftData(): PendingGiftData {
         title: '机器猫毛绒公仔',
         timeLabel: '领取时间: 2026.1.31',
         actionLabel: '已领取',
-        tab: 'claimed'
+        tab: 'claimed',
+        image: '/static/demo-page/reward-plush.svg',
+        pickupAddress: '欢乐谷旗舰店一楼服务台'
       },
       {
         id: 'gift-3',
         title: '机器猫毛绒公仔',
         timeLabel: '有效期至: 2026.1.31',
         actionLabel: '已过期',
-        tab: 'expired'
+        tab: 'expired',
+        image: '/static/demo-page/reward-plush.svg',
+        pickupAddress: '欢乐谷旗舰店一楼服务台'
       }
     ]
   }

@@ -2,48 +2,73 @@
   <PageLayout class="gift-page" title="赠送游戏币" :back="true">
     <view class="gift-page__content">
       <view class="gift-page__balance">
-        <text class="gift-page__balance-label">当前可用游戏币</text>
+        <text class="gift-page__balance-label">{{ currentBalanceLabel }}</text>
         <view class="gift-page__balance-line">
           <text class="gift-page__balance-value">{{ displayBalance }}</text>
-          <text class="gift-page__balance-unit">张</text>
+          <text class="gift-page__balance-unit">{{ currentBalanceUnit }}</text>
         </view>
         <view class="gift-page__balance-avatar"></view>
       </view>
 
-      <view class="gift-page__amount-card">
-        <text class="gift-page__amount-label">赠送数量（枚）</text>
-        <text class="gift-page__amount-value">{{ pageData.amount }}</text>
-        <view class="gift-page__amount-line"></view>
+      <view class="gift-page__project-card">
+        <text class="gift-page__section-label">赠送项目</text>
+        <view class="gift-page__project-grid">
+          <view
+            v-for="project in giftProjects"
+            :key="project.value"
+            class="gift-page__project-item"
+            :class="{ 'gift-page__project-item--active': activeProject === project.value }"
+            @click="activeProject = project.value"
+          >
+            <image class="gift-page__project-icon" :src="currentProjectIcon(project.value)" mode="aspectFit" />
+            <text class="gift-page__project-text">{{ project.label }}</text>
+          </view>
+        </view>
       </view>
 
-      <view class="gift-page__primary" @click="qrVisible = true">生成二维码（面对面）</view>
-
-      <view class="gift-page__secondary" @click="sendToWechat">
-        <text class="gift-page__secondary-text">发送给微信好友</text>
-        <view v-if="pageData.secondaryBadge" class="gift-page__secondary-badge">{{ pageData.secondaryBadge }}</view>
+      <view class="gift-page__field-card">
+        <text class="gift-page__section-label">赠予账号</text>
+        <view class="gift-page__account-row">
+          <image class="gift-page__account-icon" src="/static/demo-page/gift-account-phone.svg" mode="aspectFit" />
+          <t-input
+            v-model:value="giftAccount"
+            class="gift-page__account-input"
+            type="number"
+            placeholder="请输入手机号"
+            :maxlength="11"
+            :borderless="true"
+            :custom-style="giftAccountInputStyle"
+          />
+        </view>
       </view>
+
+      <view class="gift-page__field-card">
+        <text class="gift-page__section-label">赠送数量（{{ currentQuantityUnit }}）</text>
+        <view class="gift-page__stepper">
+          <view
+            class="gift-page__stepper-button"
+            :class="{ 'gift-page__stepper-button--disabled': giftQuantity <= 1 }"
+            @click="changeGiftQuantity(-1)"
+          >
+            -
+          </view>
+          <view class="gift-page__stepper-value">{{ giftQuantity }}</view>
+          <view class="gift-page__stepper-button" @click="changeGiftQuantity(1)">+</view>
+        </view>
+      </view>
+
+      <view class="gift-page__primary" @click="submitGift">确认赠送</view>
     </view>
-
-    <QrCodePopup
-      :visible="qrVisible"
-      title="扫码领取游戏币"
-      :amount="displayQrAmount"
-      amount-unit="币"
-      :value="displayQrValue"
-      :tips="pageData.qrTipLines"
-      action-text="撤销赠送"
-      @update:visible="qrVisible = $event"
-      @action="qrVisible = false"
-    />
   </PageLayout>
 </template>
 
 <script setup lang="ts">
 import { computed, reactive, ref } from 'vue'
 import { onShow } from '@dcloudio/uni-app'
+import TInput from 'tdesign-uniapp/input/input.vue'
 import PageLayout from '@/components/common/layout/PageLayout.vue'
-import QrCodePopup from '@/components/common/popup/QrCodePopup.vue'
-import { getGiftCoinPageData, type GiftCoinPageData } from '@/services/member'
+import { getCurrentUserProfile } from '@/services/auth'
+import { getGiftCoinPageData, submitGift as submitGiftRequest, type GiftCoinPageData } from '@/services/member'
 import { guardRouteAccess } from '@/utils/auth'
 import { useUserStore } from '@/stores'
 
@@ -57,13 +82,45 @@ const pageData = reactive<GiftCoinPageData>({
   qrTipLines: []
 })
 
-const qrVisible = ref(false)
-const displayBalance = computed(() => Number(userStore.profile.coin || Number(pageData.balance)).toLocaleString('zh-CN'))
-const displayQrAmount = computed(() => pageData.qrAmount || pageData.amount)
-const displayQrValue = computed(() => {
-  const memberId = userStore.profile.memberId || 'guest'
-  return `${pageData.qrValue || 'https://rfkj.example.com/gift/redeem'}&memberId=${encodeURIComponent(memberId)}`
+const giftAccount = ref('')
+const giftQuantity = ref(100)
+const activeProject = ref<'coin' | 'ticket' | 'points'>('coin')
+const giftProjects = [
+  { value: 'coin', label: '游戏币' },
+  { value: 'ticket', label: '彩票' },
+  { value: 'points', label: '积分' }
+] as const
+const currentBalanceValue = computed(() => {
+  if (activeProject.value === 'coin') {
+    return resolveAssetValue(userStore.profile.coin, pageData.balance, 1250)
+  }
+
+  if (activeProject.value === 'ticket') {
+    return resolveAssetValue(userStore.profile.ticket, '', 456)
+  }
+
+  return resolveAssetValue(userStore.profile.integral, '', 12123)
 })
+const currentBalanceLabel = computed(() => {
+  if (activeProject.value === 'coin') return '当前可用游戏币'
+  if (activeProject.value === 'ticket') return '当前可用彩票'
+  return '当前可用积分'
+})
+const currentBalanceUnit = computed(() => {
+  if (activeProject.value === 'coin') return '枚'
+  if (activeProject.value === 'points') return '分'
+  return '张'
+})
+const currentQuantityUnit = computed(() => {
+  if (activeProject.value === 'coin') return '枚'
+  if (activeProject.value === 'points') return '分'
+  return '张'
+})
+const displayBalance = computed(() => currentBalanceValue.value.toLocaleString('zh-CN'))
+const giftAccountInputStyle = {
+  '--td-input-bg-color': 'transparent',
+  '--td-input-vertical-padding': '0'
+}
 
 loadPageData()
 onShow(() => {
@@ -72,13 +129,122 @@ onShow(() => {
 
 async function loadPageData() {
   Object.assign(pageData, await getGiftCoinPageData())
+  giftQuantity.value = Number(pageData.amount || 100)
 }
 
-function sendToWechat() {
-  uni.showToast({
-    title: '已模拟发送给微信好友',
-    icon: 'none'
-  })
+function changeGiftQuantity(step: number) {
+  const nextValue = giftQuantity.value + step
+  giftQuantity.value = Math.max(1, Math.min(9999, nextValue))
+}
+
+function currentProjectIcon(value: 'coin' | 'ticket' | 'points') {
+  if (value === 'coin') {
+    return activeProject.value === value
+      ? '/static/demo-page/gift-project-coin.svg'
+      : '/static/demo-page/gift-project-coin-inactive.svg'
+  }
+
+  if (value === 'ticket') {
+    return activeProject.value === value
+      ? '/static/demo-page/gift-project-ticket-active.svg'
+      : '/static/demo-page/gift-project-ticket.svg'
+  }
+
+  return activeProject.value === value
+    ? '/static/demo-page/gift-project-points-active.svg'
+    : '/static/demo-page/gift-project-points.svg'
+}
+
+async function submitGift() {
+  if (!validateGiftForm()) {
+    return
+  }
+
+  try {
+    const targetPhone = giftAccount.value
+    const quantity = giftQuantity.value
+    const assetLabel = activeProjectLabel.value
+
+    await submitGiftRequest({
+      assetType: activeProject.value,
+      receivePhone: targetPhone,
+      quantity
+    })
+
+    try {
+      const currentUser = await getCurrentUserProfile()
+      userStore.updateProfile({
+        nickname: currentUser.nickname,
+        memberId: currentUser.memberId,
+        avatar: currentUser.avatar,
+        phone: currentUser.phone,
+        address: currentUser.address,
+        storeId: currentUser.storeId,
+        coin: currentUser.coin,
+        integral: currentUser.integral,
+        ticket: currentUser.ticket,
+        status: currentUser.status
+      })
+    } catch (error) {
+      console.warn('refresh profile after gift failed', error)
+    }
+
+    giftAccount.value = ''
+    giftQuantity.value = Number(pageData.amount || 100)
+    uni.showToast({
+      title: `已向 ${targetPhone} 赠送${quantity}${assetLabel}`,
+      icon: 'none'
+    })
+  } catch (error) {
+    const message = error instanceof Error ? error.message : '赠送失败'
+    uni.showToast({
+      title: message,
+      icon: 'none'
+    })
+  }
+}
+
+function validateGiftForm() {
+  if (!/^1\d{10}$/.test(giftAccount.value)) {
+    uni.showToast({
+      title: '请输入正确的赠予账号',
+      icon: 'none'
+    })
+    return false
+  }
+
+  if (giftQuantity.value <= 0) {
+    uni.showToast({
+      title: '请输入赠送数量',
+      icon: 'none'
+    })
+    return false
+  }
+
+  if (giftQuantity.value > currentBalanceValue.value) {
+    uni.showToast({
+      title: '赠送数量不能超过当前可用余额',
+      icon: 'none'
+    })
+    return false
+  }
+
+  return true
+}
+
+const activeProjectLabel = computed(() => giftProjects.find(item => item.value === activeProject.value)?.label || '游戏币')
+
+function resolveAssetValue(primaryValue: number, fallbackText: string, mockValue: number) {
+  if (Number.isFinite(primaryValue) && primaryValue > 0) {
+    return primaryValue
+  }
+
+  const normalizedFallback = Number(String(fallbackText || '').replace(/,/g, ''))
+  if (Number.isFinite(normalizedFallback) && normalizedFallback > 0) {
+    return normalizedFallback
+  }
+
+  return mockValue
 }
 </script>
 
@@ -95,7 +261,8 @@ function sendToWechat() {
 }
 
 .gift-page__balance,
-.gift-page__amount-card {
+.gift-page__project-card,
+.gift-page__field-card {
   margin-bottom: 24rpx;
   padding: 24rpx;
   border: 2rpx solid $border-light;
@@ -108,7 +275,7 @@ function sendToWechat() {
 }
 
 .gift-page__balance-label,
-.gift-page__amount-label {
+.gift-page__section-label {
   font-size: 24rpx;
   color: $text-tertiary;
 }
@@ -142,69 +309,109 @@ function sendToWechat() {
   @include public-cover($public-demo-image-1);
 }
 
-.gift-page__amount-card {
-  min-height: 214rpx;
+.gift-page__project-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16rpx;
+  margin-top: 18rpx;
+}
+
+.gift-page__project-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12rpx;
+  min-height: 144rpx;
+  padding: 20rpx 12rpx;
+  border: 2rpx solid $border-light;
+  border-radius: 20rpx;
+  background: #f9fbff;
+}
+
+.gift-page__project-item--active {
+  border-color: $primary;
+  background: $primary;
+}
+
+.gift-page__project-icon {
+  width: 44rpx;
+  height: 44rpx;
+}
+
+.gift-page__project-item--active .gift-page__project-icon {
+  filter: brightness(0) invert(1);
+}
+
+.gift-page__project-text {
+  font-size: 24rpx;
+  color: $text-strong;
+}
+
+.gift-page__project-item--active .gift-page__project-text {
+  color: #fff;
+}
+
+.gift-page__account-row {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+  margin-top: 18rpx;
+  padding: 0 8rpx 0 20rpx;
+  min-height: 92rpx;
+  border-radius: 20rpx;
+  border: 2rpx solid $border-light;
+  background: #fff;
+}
+
+.gift-page__account-icon {
+  width: 36rpx;
+  height: 36rpx;
+}
+
+.gift-page__account-input {
+  flex: 1;
+}
+
+.gift-page__stepper {
+  display: grid;
+  grid-template-columns: 88rpx 1fr 88rpx;
+  align-items: center;
+  height: 96rpx;
+  margin-top: 18rpx;
+  overflow: hidden;
+  border-radius: 20rpx;
+  background: #f4f8ff;
+}
+
+.gift-page__stepper-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  font-size: 40rpx;
+  color: $text-strong;
+}
+
+.gift-page__stepper-button--disabled {
+  color: #c5ceda;
+}
+
+.gift-page__stepper-value {
   text-align: center;
-}
-
-.gift-page__amount-label {
-  display: block;
-  text-align: left;
-}
-
-.gift-page__amount-value {
-  display: block;
-  margin-top: 20rpx;
-  font-size: 72rpx;
-}
-
-.gift-page__amount-line {
-  height: 2rpx;
-  margin-top: 22rpx;
-  background: $border-light;
+  font-size: 40rpx;
+  font-weight: 700;
+  color: $primary;
 }
 
 .gift-page__primary {
   width: 100%;
   height: 106rpx;
+  margin-top: 8rpx;
   border-radius: 28rpx;
   background: #245cf0;
   text-align: center;
   line-height: 106rpx;
   font-size: 36rpx;
-  font-weight: 700;
-  color: #fff;
-}
-
-.gift-page__secondary {
-  position: relative;
-  margin-top: 54rpx;
-  width: 100%;
-  height: 106rpx;
-  border-radius: 28rpx;
-  background: $primary-soft;
-  text-align: center;
-  line-height: 106rpx;
-}
-
-.gift-page__secondary-text {
-  font-size: 36rpx;
-  font-weight: 700;
-  color: $primary;
-}
-
-.gift-page__secondary-badge {
-  position: absolute;
-  right: 104rpx;
-  top: 18rpx;
-  width: 48rpx;
-  height: 48rpx;
-  border-radius: 50%;
-  background: #ff1010;
-  box-shadow: 0 8rpx 12rpx rgba(0, 0, 0, 0.2);
-  text-align: center;
-  line-height: 48rpx;
-  font-size: 24rpx;
   font-weight: 700;
   color: #fff;
 }

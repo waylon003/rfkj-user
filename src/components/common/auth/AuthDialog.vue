@@ -275,7 +275,7 @@ async function handleWechatPhoneNumber(event: any) {
   try {
     const userInfo = await getWechatPhoneNumber(
       wxCode,
-      userStore.selectedStoreId,
+      userStore.effectiveStoreId,
       pendingSessionId.value || undefined
     )
 

@@ -6,33 +6,37 @@
         <text class="gift-records__summary-line">当前门店：{{ currentStoreName }}</text>
       </view>
 
+      <view v-if="displayRecords.length === 0" class="gift-records__empty">
+        <text class="gift-records__empty-text">暂无互赠记录</text>
+        <text class="gift-records__empty-hint">通过赠送功能向好友转赠游戏币、积分或彩票</text>
+      </view>
+
       <view
         v-for="item in displayRecords"
         :key="item.id"
         class="record-card"
       >
-        <view class="record-card__body">
-          <view class="record-card__head">
-            <view class="record-card__head-left">
-              <view class="record-card__pill" :class="`record-card__pill--${item.type}`">
-                {{ item.type === 'income' ? '收入' : item.type === 'returned' ? '退回' : '支出' }}
-              </view>
-              <text class="record-card__title">{{ item.title }}</text>
-            </view>
-            <text class="record-card__amount">{{ item.amount }}</text>
+        <view class="record-card__top">
+          <view class="record-card__tag" :class="`record-card__tag--${item.type}`">
+            {{ item.type === 'income' ? '收入' : item.type === 'returned' ? '退回' : '支出' }}
           </view>
-          <view class="record-card__meta">
-            <text>获得时间</text>
-            <text>{{ item.time }}</text>
-          </view>
-          <view class="record-card__meta">
-            <text>获得方式</text>
-            <text>{{ item.method }}</text>
-          </view>
+          <text class="record-card__title">{{ item.title }}</text>
+          <text class="record-card__amount" :class="`record-card__amount--${item.type}`">{{ item.amount }}</text>
+        </view>
+        <view class="record-card__meta-row">
+          <text class="record-card__meta-label">获得时间</text>
+          <text class="record-card__meta-value">{{ item.time }}</text>
+        </view>
+        <view class="record-card__meta-row">
+          <text class="record-card__meta-label">获得方式</text>
+          <text class="record-card__meta-value">{{ item.method }}</text>
         </view>
 
         <view v-if="item.statusText" class="record-card__status">
-          <text>{{ item.statusText }}</text>
+          <view class="record-card__status-main" :class="`record-card__status-main--${item.statusType || 'pending'}`">
+            <view class="record-card__status-dot"></view>
+            <text>{{ item.statusText }}</text>
+          </view>
           <view v-if="item.actionText" class="record-card__action" @click="handleRecordAction(item)">{{ item.actionText }}</view>
         </view>
       </view>
@@ -55,37 +59,88 @@ import { computed, reactive, ref } from 'vue'
 import { onShow } from '@dcloudio/uni-app'
 import PageLayout from '@/components/common/layout/PageLayout.vue'
 import QrCodePopup from '@/components/common/popup/QrCodePopup.vue'
-import { getGiftRecordData, type GiftRecordData, type GiftRecordItem } from '@/services/profile'
+import { getUserTransferList, type UserTransferRecord } from '@/services/member'
 import { guardRouteAccess } from '@/utils/auth'
 import { useUserStore } from '@/stores'
 
+interface DisplayRecord {
+  id: string
+  type: 'income' | 'expense' | 'returned'
+  title: string
+  amount: string
+  time: string
+  method: string
+  statusText?: string
+  statusType?: 'received' | 'pending' | 'returned'
+  actionText?: string
+  qrValue?: string
+}
+
 const userStore = useUserStore()
-const pageData = reactive<GiftRecordData>({
-  title: '',
-  list: []
-})
+const records = reactive<DisplayRecord[]>([])
 const qrVisible = ref(false)
 const activeQrValue = ref('')
 const userMemberId = computed(() => userStore.profile.memberId || 'guest')
 const displayMemberId = computed(() => userStore.profile.memberId || 'ID:--')
-const currentStoreName = computed(() => userStore.selectedStoreName || '未选择门店')
+const currentStoreName = computed(() => userStore.selectedStoreName || '未注册门店')
 const displayRecords = computed(() =>
-  pageData.list.map(item => ({
-    ...mapRecordByStore(item),
-    method: `${mapRecordByStore(item).method} / ${currentStoreName.value}`
+  records.map(item => ({
+    ...item,
+    method: `${item.method} / ${currentStoreName.value}`
   }))
 )
 
-loadPageData()
+void loadPageData().catch(showError)
 onShow(() => {
   guardRouteAccess('/pages/profile/gift-records', '/pages/profile/index')
 })
 
 async function loadPageData() {
-  Object.assign(pageData, await getGiftRecordData())
+  // 获取我转出的记录
+  const [givenData, receivedData] = await Promise.all([
+    getUserTransferList(true),
+    getUserTransferList(false)
+  ])
+
+  const mapped: DisplayRecord[] = []
+
+  // 我转出的记录
+  givenData.list.forEach(item => {
+    mapped.push(mapTransferRecord(item, 'expense'))
+  })
+
+  // 我收到的记录
+  receivedData.list.forEach(item => {
+    mapped.push(mapTransferRecord(item, 'income'))
+  })
+
+  // 按时间倒序排列
+  mapped.sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime())
+
+  records.splice(0, records.length, ...mapped)
 }
 
-function openQrPopup(item: GiftRecordItem) {
+function mapTransferRecord(item: UserTransferRecord, defaultType: 'income' | 'expense'): DisplayRecord {
+  const assetName = getAssetName(item.stdMode)
+  const isIncome = defaultType === 'income'
+  const counterparty = isIncome ? item.userName || item.userPhone : item.descUserName || item.descPhone
+
+  return {
+    id: String(item.id),
+    type: defaultType,
+    title: isIncome ? `收到${counterparty}赠送${assetName}` : `赠送给${counterparty}${assetName}`,
+    amount: isIncome ? `+${item.number}` : `-${item.number}`,
+    time: item.createdAt,
+    method: assetName
+  }
+}
+
+function getAssetName(stdMode: 1 | 2 | 3): string {
+  const names: Record<number, string> = { 1: '游戏币', 2: '积分', 3: '彩票' }
+  return names[stdMode] || '未知资产'
+}
+
+function openQrPopup(item: DisplayRecord) {
   if (!item.qrValue) {
     return
   }
@@ -94,7 +149,7 @@ function openQrPopup(item: GiftRecordItem) {
   qrVisible.value = true
 }
 
-function handleRecordAction(item: GiftRecordItem) {
+function handleRecordAction(item: DisplayRecord) {
   if (item.qrValue) {
     openQrPopup(item)
     return
@@ -110,28 +165,12 @@ function handleRecordAction(item: GiftRecordItem) {
   }
 }
 
-function mapRecordByStore(item: GiftRecordItem) {
-  if (currentStoreName.value.includes('额企鹅驱蚊器')) {
-    if (item.id === 'record-1') {
-      return { ...item, title: '收到赠送游戏币（额企鹅驱蚊器店）' }
-    }
-    if (item.id === 'record-2') {
-      return { ...item, statusText: '好友“李四”已领取' }
-    }
-    return { ...item }
-  }
-
-  if (currentStoreName.value.includes('大大大大')) {
-    if (item.id === 'record-1') {
-      return { ...item, title: '收到赠送游戏币（大大大大店）', amount: '+80' }
-    }
-    if (item.id === 'record-4') {
-      return { ...item, statusText: '链接未点击，等待重新发送' }
-    }
-    return { ...item }
-  }
-
-  return { ...item }
+function showError(error: unknown) {
+  const message = error instanceof Error ? error.message : '互赠记录加载失败'
+  uni.showToast({
+    title: message,
+    icon: 'none'
+  })
 }
 </script>
 
@@ -166,92 +205,153 @@ function mapRecordByStore(item: GiftRecordItem) {
   margin-top: 8rpx;
 }
 
+.gift-records__empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 120rpx 48rpx;
+}
+
+.gift-records__empty-text {
+  font-size: 32rpx;
+  color: $text-secondary;
+  line-height: 44rpx;
+}
+
+.gift-records__empty-hint {
+  margin-top: 16rpx;
+  font-size: 26rpx;
+  color: $text-tertiary;
+  line-height: 40rpx;
+  text-align: center;
+}
+
 .record-card {
   margin-bottom: 24rpx;
+  padding: 24rpx;
   border-radius: 24rpx;
   background: #fff;
   border: 2rpx solid $border-light;
 }
 
-.record-card__pill {
-  display: inline-block;
+.record-card__top {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+}
+
+.record-card__tag {
   min-width: 80rpx;
   height: 42rpx;
-  margin: 24rpx 0 0 24rpx;
+  padding: 0 12rpx;
   border-radius: 10rpx;
-  text-align: center;
-  line-height: 42rpx;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   font-size: 24rpx;
 }
 
-.record-card__pill--income {
-  background: #eef6ff;
+.record-card__tag--income {
+  background: #f0fdf4;
+  color: #00a63e;
+}
+
+.record-card__tag--expense {
+  background: #eff6ff;
   color: $primary;
 }
 
-.record-card__pill--expense {
-  background: #fff7ed;
-  color: #f97316;
-}
-
-.record-card__pill--returned {
+.record-card__tag--returned {
   background: #eef2f7;
   color: $text-tertiary;
 }
 
-.record-card__body {
-  padding: 24rpx 24rpx 22rpx;
-}
-
-.record-card__head,
-.record-card__meta {
-  display: flex;
-  justify-content: space-between;
-}
-
-.record-card__head {
-  align-items: center;
-}
-
-.record-card__head-left {
-  display: flex;
-  align-items: center;
-  min-width: 0;
-}
-
 .record-card__title {
-  margin-left: 16rpx;
+  flex: 1;
+  min-width: 0;
   font-size: 32rpx;
   color: $text-strong;
 }
 
 .record-card__amount {
+  flex: 0 0 auto;
   font-size: 30rpx;
   font-weight: 700;
+}
+
+.record-card__amount--income {
+  color: #00a63e;
+}
+
+.record-card__amount--expense {
   color: $primary;
 }
 
-.record-card__meta {
-  margin-top: 12rpx;
+.record-card__amount--returned {
+  color: $text-tertiary;
+}
+
+.record-card__meta-row {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 14rpx;
   font-size: 24rpx;
+}
+
+.record-card__meta-label {
   color: $text-secondary;
+}
+
+.record-card__meta-value {
+  margin-left: auto;
+  text-align: right;
+  color: $text-strong;
 }
 
 .record-card__status {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 22rpx 24rpx;
+  margin-top: 18rpx;
+  padding-top: 18rpx;
   border-top: 2rpx solid $border-light;
   font-size: 24rpx;
   color: $text-secondary;
 }
 
+.record-card__status-main {
+  display: inline-flex;
+  align-items: center;
+  gap: 8rpx;
+  min-width: 0;
+}
+
+.record-card__status-main--received {
+  color: #00a63e;
+}
+
+.record-card__status-main--pending {
+  color: #f97316;
+}
+
+.record-card__status-main--returned {
+  color: $text-tertiary;
+}
+
+.record-card__status-dot {
+  width: 14rpx;
+  height: 14rpx;
+  border-radius: 50%;
+  background: currentColor;
+  flex: 0 0 auto;
+}
+
 .record-card__action {
   min-width: 132rpx;
   height: 52rpx;
+  padding: 0 18rpx;
   border-radius: 16rpx;
-  background: $surface-avatar;
+  background: #f5f7fb;
   text-align: center;
   line-height: 52rpx;
   color: $text-strong;

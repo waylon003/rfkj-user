@@ -32,7 +32,7 @@
 
       <view class="ticket-exchange__estimate">
         <view class="ticket-exchange__estimate-dot"></view>
-        <text>预计可兑换{{ estimatedPoints }}积分</text>
+        <text>{{ estimatedText }}</text>
       </view>
 
       <view class="ticket-exchange__submit" @click="submitExchange">立即兑换</view>
@@ -44,12 +44,14 @@
 import { computed, ref } from 'vue'
 import { onShow } from '@dcloudio/uni-app'
 import PageLayout from '@/components/common/layout/PageLayout.vue'
+import { getCurrentUserProfile } from '@/services/auth'
+import { submitRedeem } from '@/services/member'
 import { guardRouteAccess } from '@/utils/auth'
 import { useUserStore } from '@/stores'
 
 const userStore = useUserStore()
 const exchangeAmount = ref(100)
-const exchangeRatio = 100
+const latestRedeemPoints = ref<number | null>(null)
 
 onShow(() => {
   guardRouteAccess('/pages/member/tickets', '/pages/home/index')
@@ -59,7 +61,11 @@ const currentTickets = computed(() => userStore.profile.ticket || 456)
 const currentPoints = computed(() => userStore.profile.integral || 12123)
 const displayTickets = computed(() => currentTickets.value.toLocaleString('zh-CN'))
 const displayPoints = computed(() => currentPoints.value.toLocaleString('zh-CN'))
-const estimatedPoints = computed(() => exchangeAmount.value * exchangeRatio)
+const estimatedText = computed(() =>
+  latestRedeemPoints.value !== null
+    ? `本次实际兑换${latestRedeemPoints.value}积分`
+    : '实际到账以兑换结果和余额刷新为准'
+)
 
 function handleAmountInput(event: any) {
   const rawValue = Number(event?.detail?.value)
@@ -71,11 +77,74 @@ function updateAmount(value: number) {
   exchangeAmount.value = Math.min(currentTickets.value, Math.max(1, normalized || 1))
 }
 
-function submitExchange() {
-  uni.showToast({
-    title: `已模拟兑换${estimatedPoints.value}积分`,
-    icon: 'none'
-  })
+async function submitExchange() {
+  if (exchangeAmount.value <= 0) {
+    uni.showToast({
+      title: '请输入正确的兑换数量',
+      icon: 'none'
+    })
+    return
+  }
+
+  if (exchangeAmount.value > currentTickets.value) {
+    uni.showToast({
+      title: '兑换数量不能超过当前彩票余额',
+      icon: 'none'
+    })
+    return
+  }
+
+  const beforePoints = currentPoints.value
+  const beforeTickets = currentTickets.value
+
+  try {
+    const result = await submitRedeem({
+      number: exchangeAmount.value,
+      category: 0
+    })
+
+    let toastMessage = result.message || '兑换完成'
+
+    try {
+      const profile = await getCurrentUserProfile()
+      userStore.updateProfile({
+        uid: profile.uid,
+        nickname: profile.nickname,
+        memberId: profile.memberId,
+        avatar: profile.avatar,
+        phone: profile.phone,
+        address: profile.address,
+        storeId: profile.storeId,
+        coin: profile.coin,
+        integral: profile.integral,
+        ticket: profile.ticket,
+        status: profile.status
+      })
+
+      const actualPoints = Math.max(0, profile.integral - beforePoints)
+      const actualTickets = Math.max(0, beforeTickets - profile.ticket)
+      latestRedeemPoints.value = actualPoints > 0 ? actualPoints : null
+
+      if (actualPoints > 0) {
+        toastMessage = `已使用${actualTickets || exchangeAmount.value}张彩票兑换${actualPoints}积分`
+      }
+    } catch (error) {
+      console.warn('refresh profile after redeem failed', error)
+      latestRedeemPoints.value = null
+    }
+
+    exchangeAmount.value = Math.min(currentTickets.value, Math.max(1, exchangeAmount.value))
+    uni.showToast({
+      title: toastMessage,
+      icon: 'none'
+    })
+  } catch (error) {
+    const message = error instanceof Error ? error.message : '兑换失败'
+    uni.showToast({
+      title: message,
+      icon: 'none'
+    })
+  }
 }
 </script>
 

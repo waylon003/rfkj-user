@@ -25,6 +25,9 @@
       </view>
 
       <section-card class="bill-page__section" :title="pageData.monthLabel">
+        <view v-if="monthRecords.length === 0" class="bill-page__empty">
+          <text class="bill-page__empty-text">本月暂无账单记录</text>
+        </view>
         <view
           v-for="item in monthRecords"
           :key="item.id"
@@ -45,6 +48,9 @@
       </section-card>
 
       <section-card class="bill-page__section" :title="pageData.historyLabel">
+        <view v-if="historyRecords.length === 0" class="bill-page__empty">
+          <text class="bill-page__empty-text">暂无更早的账单记录</text>
+        </view>
         <view
           v-for="item in historyRecords"
           :key="item.id"
@@ -89,16 +95,14 @@ const activeTab = ref<BillTab>('all')
 const monthRecords = computed(() =>
   pageData.monthRecords
     .filter(item => activeTab.value === 'all' || item.tab === activeTab.value)
-    .map(item => mapBillRecordByStore(item))
 )
 
 const historyRecords = computed(() =>
   pageData.historyRecords
     .filter(item => activeTab.value === 'all' || item.tab === activeTab.value)
-    .map(item => mapBillRecordByStore(item))
 )
 const displayMemberId = computed(() => userStore.profile.memberId || 'ID:--')
-const currentStoreName = computed(() => userStore.selectedStoreName || '未选择门店')
+const currentStoreName = computed(() => userStore.selectedStoreName || '未注册门店')
 const displayCoin = computed(() => (userStore.profile.coin || 0).toLocaleString('zh-CN'))
 const displayTicket = computed(() => (userStore.profile.ticket || 0).toLocaleString('zh-CN'))
 const displayIntegral = computed(() => (userStore.profile.integral || 0).toLocaleString('zh-CN'))
@@ -106,34 +110,11 @@ const displayIntegral = computed(() => (userStore.profile.integral || 0).toLocal
 loadPageData()
 onShow(() => {
   guardRouteAccess('/pages/profile/bill', '/pages/profile/index')
+  loadPageData()
 })
 
 async function loadPageData() {
   Object.assign(pageData, await getBillPageData())
-}
-
-function mapBillRecordByStore(item: BillPageData['monthRecords'][number]) {
-  if (currentStoreName.value.includes('额企鹅驱蚊器')) {
-    if (item.id === 'bill-1') {
-      return { ...item, title: '购买游戏币（额企鹅驱蚊器店）', amount: '+120' }
-    }
-    if (item.id === 'bill-2') {
-      return { ...item, title: '彩票兑换积分（额企鹅驱蚊器店）', amount: '+680' }
-    }
-    return { ...item }
-  }
-
-  if (currentStoreName.value.includes('大大大大')) {
-    if (item.id === 'bill-1') {
-      return { ...item, title: '购买游戏币（大大大大店）', amount: '+80' }
-    }
-    if (item.id === 'bill-3') {
-      return { ...item, title: '积分兑换礼品（大大大大店）', amount: '-350' }
-    }
-    return { ...item }
-  }
-
-  return item
 }
 </script>
 
@@ -250,6 +231,17 @@ function mapBillRecordByStore(item: BillPageData['monthRecords'][number]) {
   display: block;
   margin-top: 8rpx;
   font-size: 24rpx;
+  color: $text-tertiary;
+}
+
+.bill-page__empty {
+  display: flex;
+  justify-content: center;
+  padding: 48rpx 0;
+}
+
+.bill-page__empty-text {
+  font-size: 26rpx;
   color: $text-tertiary;
 }
 </style>
